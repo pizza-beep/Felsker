@@ -315,7 +315,11 @@ void selectAndModifyOffset() {
     Keyboard kb2("Select Property:");
     kb2.Populate(properties);
     int propIndex = kb2.Open();
-    if (propIndex < 0) return;  
+    if (propIndex < 0) return; 
+    
+    if (properties[propIndex] == "UV"){
+        coordinates = {"X", "Y"};
+    }
 
     Keyboard kb3("Select Coordinate:");
     kb3.Populate(coordinates);

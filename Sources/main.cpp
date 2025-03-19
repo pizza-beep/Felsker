@@ -316,7 +316,7 @@ exit:
         }));
         toolsFolder->Append(new MenuEntry("World Extractor", nullptr, [](MenuEntry *entry)
         {
-            if (MessageBox("WARNING - Are You Sure?", "World Extractor will Extract your Currently Running World if you're in one. The plugin will freeze, and can take up a-lot of SDMC Space (5MiB->50MiB) and can bloat the DCIM Camera Directory, please wait (10s->20s) for the plugin to Finish. Once started, you cannot cancel the operation.\n\nNote: These worlds once extracted will need to have a headers rebuilt.", DialogType::DialogOkCancel, ClearScreen::Both)()){
+            if (MessageBox("WARNING - Are You Sure?", "World Extractor will Extract your Currently Running World if you're in one. The plugin will freeze, and can take up a-lot of SDMC Space (5MiB->50MiB) and can bloat the DCIM Camera Directory, please wait (30s->45s) for the plugin to Finish. Once started, you cannot cancel the operation.\n\nNote: These worlds once extracted will need to have the headers rebuilt.", DialogType::DialogOkCancel, ClearScreen::Both)()){
                 backupWorld();
             } else{
                 OSD::Notify("Operation Cancled.");

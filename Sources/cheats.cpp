@@ -360,14 +360,14 @@ void backupWorld(){
         u32 getBaseAddress = Utils::Search(startAddress, size, valToSearch);
         if (getBaseAddress != 0x00){
             OSD::Notify(Utils::Format("Found Save Address at: 0x%X", getBaseAddress));
-            File::Create(Utils::Format("sdmc:/slt%u.cdb", i));
+            File::Create(Utils::Format("sdmc:/DCIM/slt%u.cdb", i));
 
-            if (File::Open(file, Utils::Format("sdmc:/slt%u.cdb", i), File::WRITE) != 0){
-                OSD::Notify("Failed to open the slt0.cdb file!");
+            if (File::Open(file, Utils::Format("sdmc:/DCIM/slt%u.cdb", i), File::WRITE) != 0){
+                OSD::Notify("Failed to open the CDB Slot file!");
                 return;
             } else{
                 file.Dump(getBaseAddress, 0x140000);
-                OSD::Notify("Dumped slt0.cdb");
+                OSD::Notify("Dumped CDB Chunk.");
             }
             file.Close();
             startAddress += 0x140000;

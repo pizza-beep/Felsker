@@ -139,8 +139,9 @@ exit:
     void InitMenu(PluginMenu &menu)
     {
         MenuFolder *codesFolder = new MenuFolder("Default Codes");
-        MenuFolder *configFolder = new MenuFolder("Configurations");
         MenuFolder *funFolder = new MenuFolder("Fun Codes");
+        MenuFolder *configFolder = new MenuFolder("Config");
+        MenuFolder *toolsFolder = new MenuFolder("Tools");
         codesFolder->Append(new MenuEntry("Megapack Default Codes", defaultCodes));
         codesFolder->Append(new MenuEntry("Drop Everything In-Hand", dropEverything));
         codesFolder->Append(new MenuEntry("Disable Ground Item/EXP Limit", itemExpLimit));
@@ -151,6 +152,15 @@ exit:
         funFolder->Append(new MenuEntry("Better Minecart Physics", betterMinecartPhysics));
         funFolder->Append(new MenuEntry("Remove (most) Mob Heads", removeHeads));
         funFolder->Append(new MenuEntry("Every Mob/Player Spins", everythingSpinny));
+        toolsFolder->Append(new MenuEntry("Player Model Editor", nullptr, [](MenuEntry *entry)
+        {
+            if (MessageBox("Are you Sure?", "The Model Editor will Permanately Change your Skin Attributes.", DialogType::DialogOkCancel, ClearScreen::Both)()){
+                selectAndModifyOffset();
+            } else{
+                OSD::Notify("Operation Cancled.");
+            }
+            
+        }));
         funFolder->Append(new MenuEntry("Change Player Scaling", nullptr, [](MenuEntry *entry)
         {
             float userValue;
@@ -226,7 +236,7 @@ exit:
             }
 
         }));
-        
+        // configs
         configFolder->Append(new MenuEntry("Change ViewBobbing Sensitivity", nullptr, [](MenuEntry *entry)
         {
             float userValue;
@@ -304,9 +314,18 @@ exit:
                 OSD::Notify(Utils::Format("Written: %.2f to 0x3CEE80", userValue));
         }
         }));
+        toolsFolder->Append(new MenuEntry("World Extractor", nullptr, [](MenuEntry *entry)
+        {
+            if (MessageBox("WARNING - Are You Sure?", "World Extractor will Extract your Currently Running World if you're in one. The plugin will freeze, and can take up a-lot of SDMC Space (5MiB->50MiB) and can bloat the DCIM Camera Directory, please wait (10s->20s) for the plugin to Finish. Once started, you cannot cancel the operation.\n\nNote: These worlds once extracted will need to have a headers rebuilt.", DialogType::DialogOkCancel, ClearScreen::Both)()){
+                backupWorld();
+            } else{
+                OSD::Notify("Operation Cancled.");
+            }
+        }));
         menu += codesFolder;
-        menu += configFolder;
         menu += funFolder;
+        menu += configFolder;
+        menu += toolsFolder;
     }
 
     int main(void)

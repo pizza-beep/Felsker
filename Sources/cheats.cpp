@@ -1,6 +1,11 @@
 #include "cheats.hpp"
 #include "types.h"
 #include "3ds.h"
+#include <iostream>
+#include <fstream>
+#include <unordered_map>
+#include <sstream>
+#include <cstdint>
 
 namespace CTRPluginFramework
 {
@@ -210,5 +215,173 @@ void everythingSpinny(MenuEntry *entry){
     Process::WriteFloat(0x17B728, 0.0);
 }
 }
+
+void ModifySignedIntFromFile(const std::string& filename, std::streampos offset) {
+    File file;
+    int32_t value;
+
+    // Open the file for reading and writing
+    if (File::Open(file, filename, File::READ | File::WRITE) != 0) {
+        OSD::Notify("Failed to open file!");
+        return;
+    }
+
+    // Seek to the offset and read 4 bytes (signed 32-bit integer)
+    file.Seek(offset, File::SET);
+    file.Read(&value, sizeof(value));
+
+    OSD::Notify(Utils::Format("Initial Value: %d", value));
+
+    // Infinite loop (press SELECT + B in CTRPF to exit)
+    while (true) {
+        // Increment 5 times
+        for (int i = 0; i < 5; ++i) {
+            value++;
+            file.Seek(offset, File::SET);
+            file.Write(&value, sizeof(value));
+            OSD::Notify(Utils::Format("Incremented: %d", value));
+        }
+
+        // Decrement 5 times
+        for (int i = 0; i < 5; ++i) {
+            value--;
+            file.Seek(offset, File::SET);
+            file.Write(&value, sizeof(value));
+            OSD::Notify(Utils::Format("Decremented: %d", value));
+        }
+    }
+
+    file.Close();  // Close file (though we never reach this due to infinite loop)
+}
+
+void moveBodyPart(MenuEntry *entry){
+    std::streampos offset = 0x188;
+    std::string filename = "sdmc:/luma/titles/00040000001B8700/romfs/resourcepacks/skins/skinpacks/skins.bjson";
+    ModifySignedIntFromFile(filename, offset);
+}
+
+
+// Lookup table for offsets
+std::unordered_map<std::string, int> modelOffsets = {
+    {"Body.Pivot.X", 0x50}, {"Body.Pivot.Y", 0x5C}, {"Body.Pivot.Z", 0x68},
+    {"Body.Origin.X", 0x98}, {"Body.Origin.Y", 0xA4}, {"Body.Origin.Z", 0xB0},
+    {"Body.Size.X", 0xC8}, {"Body.Size.Y", 0xD4}, {"Body.Size.Z", 0xE0},
+    {"Body.UV.X", 0xF8}, {"Body.UV.Y", 0x104},
+    {"Head.Pivot.X", 0x134}, {"Head.Pivot.Y", 0x140}, {"Head.Pivot.Z", 0x14C},
+    {"Head.Origin.X", 0x17C}, {"Head.Origin.Y", 0x188}, {"Head.Origin.Z", 0x194},
+    {"Head.Size.X", 0x1AC}, {"Head.Size.Y", 0x1B8}, {"Head.Size.Z", 0x1C4},
+    {"Head.UV.X", 0x1DC}, {"Head.UV.Y", 0x1E8},
+    {"Hat.Pivot.X", 0x218}, {"Hat.Pivot.Y", 0x224}, {"Hat.Pivot.Z", 0x230},
+    {"Hat.Origin.X", 0x260}, {"Hat.Origin.Y", 0x26C}, {"Hat.Origin.Z", 0x278},
+    {"Hat.Size.X", 0x290}, {"Hat.Size.Y", 0x29C}, {"Hat.Size.Z", 0x2A8},
+    {"Hat.UV.X", 0x2C0}, {"Hat.UV.Y", 0x2CC},
+    {"RightArm.Pivot.X", 0x314}, {"RightArm.Pivot.Y", 0x320}, {"RightArm.Pivot.Z", 0x32C},
+    {"RightArm.Origin.X", 0x35C}, {"RightArm.Origin.Y", 0x368}, {"RightArm.Origin.Z", 0x374},
+    {"RightArm.Size.X", 0x38C}, {"RightArm.Size.Y", 0x398}, {"RightArm.Size.Z", 0x3A4},
+    {"RightArm.UV.X", 0x3BC}, {"RightArm.UV.Y", 0x3C8},
+    {"LeftArm.Pivot.X", 0x3F8}, {"LeftArm.Pivot.Y", 0x404}, {"LeftArm.Pivot.Z", 0x410},
+    {"LeftArm.Origin.X", 0x440}, {"LeftArm.Origin.Y", 0x44C}, {"LeftArm.Origin.Z", 0x458},
+    {"LeftArm.Size.X", 0x470}, {"LeftArm.Size.Y", 0x47C}, {"LeftArm.Size.Z", 0x488},
+    {"LeftArm.UV.X", 0x4A0}, {"LeftArm.UV.Y", 0x4AC},
+    {"RightLeg.Pivot.X", 0x4E8}, {"RightLeg.Pivot.Y", 0x4F4}, {"RightLeg.Pivot.Z", 0x500},
+    {"RightLeg.Origin.X", 0x530}, {"RightLeg.Origin.Y", 0x53C}, {"RightLeg.Origin.Z", 0x548},
+    {"RightLeg.Size.X", 0x560}, {"RightLeg.Size.Y", 0x56C}, {"RightLeg.Size.Z", 0x578},
+    {"RightLeg.UV.X", 0x590}, {"RightLeg.UV.Y", 0x59C},
+    {"LeftLeg.Pivot.X", 0x5CC}, {"LeftLeg.Pivot.Y", 0x5D8}, {"LeftLeg.Pivot.Z", 0x5E4},
+    {"LeftLeg.Origin.X", 0x614}, {"LeftLeg.Origin.Y", 0x620}, {"LeftLeg.Origin.Z", 0x62C},
+    {"LeftLeg.Size.X", 0x644}, {"LeftLeg.Size.Y", 0x650}, {"LeftLeg.Size.Z", 0x65C},
+    {"LeftLeg.UV.X", 0x674}, {"LeftLeg.UV.Y", 0x680},
+};
+
+int getOffset(const std::string &key) {
+    auto it = modelOffsets.find(key);
+    return (it != modelOffsets.end()) ? it->second : -1;
+}
+
+void selectAndModifyOffset() {
+    std::stringstream ss;
+    u64 processId = Process::GetTitleID();
+    ss << "sdmc:/luma/titles/000" << std::hex << processId << "/romfs/resourcepacks/skins/skinpacks/skins.bjson";
+    std::string filename = ss.str();  // Store formatted string
+    std::vector<std::string> bodyParts = {"Body", "Head", "Hat", "RightArm", "LeftArm", "RightLeg", "LeftLeg"};
+    std::vector<std::string> properties = {"Pivot", "Origin", "Size", "UV"};
+    std::vector<std::string> coordinates = {"X", "Y", "Z"};
+
+    Keyboard kb1("Select Body Part:");
+    kb1.Populate(bodyParts);
+    int bodyIndex = kb1.Open();
+    if (bodyIndex < 0) return;
+
+    Keyboard kb2("Select Property:");
+    kb2.Populate(properties);
+    int propIndex = kb2.Open();
+    if (propIndex < 0) return;  
+
+    Keyboard kb3("Select Coordinate:");
+    kb3.Populate(coordinates);
+    int coordIndex = kb3.Open();
+    if (coordIndex < 0) return; 
+
+    std::string key = bodyParts[bodyIndex] + "." + properties[propIndex] + "." + coordinates[coordIndex];
+
+    int offset = getOffset(key);
+    if (offset != -1) {
+        File file;
+        u32 value;
+
+        if (File::Open(file, filename, File::READ | File::WRITE) != 0) {
+            OSD::Notify("Failed to open file!");
+            return;
+        }
+
+        file.Seek(offset, File::SET);
+        OSD::Notify("Selected: " + key + " | Offset: 0x" + Utils::Format("%X", offset));
+
+        Keyboard kb4("Enter New Value:");
+        kb4.IsHexadecimal(false);
+        if (kb4.Open(value) != -1) {
+            file.Write(&value, sizeof(value));
+            OSD::Notify("Updated " + key + " to " + std::to_string(value));
+        }
+        file.Close();
+    } else {
+        OSD::Notify("Invalid Selection!");
+    }
+}
+
+void backupWorld(){
+    std::vector<u8> valToSearch {0x98, 0xEF, 0xCD, 0xAB};  // Pattern to search for
+    u32 endAddress = 0x36480000;
+    static u32 startAddress = 0x33000000;
+    static u32 size = endAddress - startAddress; 
+    static u16 i = 0;
+    File file;
+    while (true){
+        u32 getBaseAddress = Utils::Search(startAddress, size, valToSearch);
+        if (getBaseAddress != 0x00){
+            OSD::Notify(Utils::Format("Found Save Address at: 0x%X", getBaseAddress));
+            File::Create(Utils::Format("sdmc:/slt%u.cdb", i));
+
+            if (File::Open(file, Utils::Format("sdmc:/slt%u.cdb", i), File::WRITE) != 0){
+                OSD::Notify("Failed to open the slt0.cdb file!");
+                return;
+            } else{
+                file.Dump(getBaseAddress, 0x140000);
+                OSD::Notify("Dumped slt0.cdb");
+            }
+            file.Close();
+            startAddress += 0x140000;
+            size = endAddress - startAddress;
+            i++;
+        } else{
+            break;
+        }
+    }
+    i = 0;
+    startAddress = 0x33000000;
+    size = endAddress - startAddress;
+    return;
+}
+
 
 }

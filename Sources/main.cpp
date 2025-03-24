@@ -6,13 +6,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
+#include <iomanip>   // Include for std::hex
 #include <sstream>
 #include <vector>
 
 namespace CTRPluginFramework
 {
     Handle  processHandle;
+    //std::stringstream stringStream;
     u64 titleID = Process::GetTitleID();
+    //stringStream << "sdmc:/luma/titles/000" << std::hex << titleID << "/";
+    //std::string modsPath = stringStream.str();  // Store formatted string
+
     // This patch the NFC disabling the touchscreen when scanning an amiibo, which prevents ctrpf to be used
     static void    ToggleTouchscreenForceOn(void)
     {
@@ -152,6 +157,7 @@ exit:
         funFolder->Append(new MenuEntry("Better Minecart Physics", betterMinecartPhysics));
         funFolder->Append(new MenuEntry("Remove (most) Mob Heads", removeHeads));
         funFolder->Append(new MenuEntry("Every Mob/Player Spins", everythingSpinny));
+        //funFolder->Append(new MenuEntry("Creative Mode", creativeMode));
         toolsFolder->Append(new MenuEntry("Player Model Editor", nullptr, [](MenuEntry *entry)
         {
             if (MessageBox("Are you Sure?", "The Model Editor will Permanately Change your Skin Attributes.", DialogType::DialogOkCancel, ClearScreen::Both)()){
@@ -160,6 +166,10 @@ exit:
                 OSD::Notify("Operation Cancled.");
             }
             
+        }));
+        funFolder->Append(new MenuEntry("Control Mobs (Models)", nullptr, [](MenuEntry *entry)
+        {
+            mobController();
         }));
         funFolder->Append(new MenuEntry("Change Player Scaling", nullptr, [](MenuEntry *entry)
         {
@@ -322,6 +332,23 @@ exit:
                 OSD::Notify("Operation Cancled.");
             }
         }));
+        toolsFolder->Append(new MenuEntry("Dump Executable", nullptr, [](MenuEntry *entry)
+        {
+            if (MessageBox("Notice", "Dumping the Executable Could take some time. Continue?", DialogType::DialogOkCancel, ClearScreen::Both)()){
+                dumpExecutable();
+            } else{
+                OSD::Notify("Operation Cancled.");
+            }
+        }));
+        toolsFolder->Append(new MenuEntry("Dump Stripped Executable", nullptr, [](MenuEntry *entry)
+        {
+            if (MessageBox("Notice", "Dumping the Stripped Executable Could take some time. Continue?", DialogType::DialogOkCancel, ClearScreen::Both)()){
+                dumpStriptExecutable();
+            } else{
+                OSD::Notify("Operation Cancled.");
+            }
+        }));
+        
         menu += codesFolder;
         menu += funFolder;
         menu += configFolder;
@@ -336,7 +363,7 @@ exit:
         u64 jpnTID = 1125899908414720;
         PluginMenu *menu = nullptr;
         std::string mgapckTxt = "MegaPack Plugin - ";
-        std::string abtPlg = "A CTRPF Plugin meant for working with Minecraft 3DS' Modernization MegaPack (Modpack).\nDeveloped by: Cracko298";
+        std::string abtPlg = "A CTRPF Plugin meant for working with Minecraft 3DS' Modernization MegaPack (Modpack).\nDeveloped by: Cracko298\n\nWith help from:\n- wyndchyme (dale)\n- Zexlo\n- RaiRai6895\n- Darksiders (Kilix)";
 
         if (usaTID == titleID)
             menu = new PluginMenu(mgapckTxt + "USA", 1, 0, 0, abtPlg);
@@ -359,6 +386,8 @@ exit:
             svcCloseHandle(processHandle);
             return (0);
         } else {
+            initializePaths();
+            checkAndCreateDirectories();
             OSD::Notify("MegaPack has Successfully Loaded.");
             OSD::Notify("Press 'select' to Open Menu.");
             svcSleepThread(500000000);

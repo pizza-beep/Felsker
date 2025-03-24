@@ -24,5 +24,13 @@ namespace CTRPluginFramework
     void backupWorld();
     void selectAndModifyOffset();
     int getOffset(const std::string &key);
+    void creativeMode(MenuEntry *entry);
+    class Player;
+    void initializePaths();
+    void checkAndCreateDirectories();
+    void dumpStriptExecutable();
+    void dumpExecutable();
+    void mobController();
+    bool IsSwimming();
 }
 #endif

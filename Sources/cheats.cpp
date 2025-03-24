@@ -9,6 +9,32 @@
 
 namespace CTRPluginFramework
 {
+    std::stringstream skinsBjson, mPath;
+    u64 processId;
+    std::string filename;
+    std::string modsPath;
+    std::string megapackDir;
+    std::string megapackWorldDir;
+    std::string megapackCodeDir;
+
+    void initializePaths() {
+        processId = Process::GetTitleID();
+        skinsBjson << "sdmc:/luma/titles/000" << std::hex << processId << "/romfs/resourcepacks/skins/skinpacks/skins.bjson";
+        mPath << "sdmc:/luma/titles/000" << std::hex << processId << "/";
+        std::string modsPath = mPath.str();
+        std::string filename = skinsBjson.str();
+    }
+
+    void checkAndCreateDirectories() {
+        std::string megapackDir = "sdmc:/megapackPlugin";
+        std::string megapackWorldDir = "sdmc:/megapackPlugin/worldBackups";
+        std::string megapackCodeDir = "sdmc:/megapackPlugin/codeBackups";
+        if (Directory::IsExists(megapackDir) == 0){
+            Directory::Create(megapackDir);
+            Directory::Create(megapackWorldDir);
+            Directory::Create(megapackCodeDir);
+        }
+    }
 
 void dropEverything(MenuEntry *entry){
     if (!Process::IsPaused()){
@@ -254,13 +280,6 @@ void ModifySignedIntFromFile(const std::string& filename, std::streampos offset)
     file.Close();  // Close file (though we never reach this due to infinite loop)
 }
 
-void moveBodyPart(MenuEntry *entry){
-    std::streampos offset = 0x188;
-    std::string filename = "sdmc:/luma/titles/00040000001B8700/romfs/resourcepacks/skins/skinpacks/skins.bjson";
-    ModifySignedIntFromFile(filename, offset);
-}
-
-
 // Lookup table for offsets
 std::unordered_map<std::string, int> modelOffsets = {
     {"Body.Pivot.X", 0x50}, {"Body.Pivot.Y", 0x5C}, {"Body.Pivot.Z", 0x68},
@@ -299,10 +318,6 @@ int getOffset(const std::string &key) {
 }
 
 void selectAndModifyOffset() {
-    std::stringstream ss;
-    u64 processId = Process::GetTitleID();
-    ss << "sdmc:/luma/titles/000" << std::hex << processId << "/romfs/resourcepacks/skins/skinpacks/skins.bjson";
-    std::string filename = ss.str();  // Store formatted string
     std::vector<std::string> bodyParts = {"Body", "Head", "Hat", "RightArm", "LeftArm", "RightLeg", "LeftLeg"};
     std::vector<std::string> properties = {"Pivot", "Origin", "Size", "UV"};
     std::vector<std::string> coordinates = {"X", "Y", "Z"};
@@ -364,9 +379,9 @@ void backupWorld(){
         u32 getBaseAddress = Utils::Search(startAddress, size, valToSearch);
         if (getBaseAddress != 0x00){
             OSD::Notify(Utils::Format("Found Save Address at: 0x%X", getBaseAddress));
-            File::Create(Utils::Format("sdmc:/DCIM/slt%u.cdb", i));
+            File::Create(Utils::Format("sdmc:/megapackPlugin/worldBackups/slt%u.cdb", i));
 
-            if (File::Open(file, Utils::Format("sdmc:/DCIM/slt%u.cdb", i), File::WRITE) != 0){
+            if (File::Open(file, Utils::Format("sdmc:/megapackPlugin/worldBackups/slt%u.cdb", i), File::WRITE) != 0){
                 OSD::Notify("Failed to open the CDB Slot file!");
                 return;
             } else{
@@ -385,6 +400,84 @@ void backupWorld(){
     startAddress = 0x33000000;
     size = endAddress - startAddress;
     return;
+}
+
+void creativeMode(MenuEntry *entry){
+    Process::Write32(0x005FF184, 0xEB0C65DD);
+    Process::Write32(0x00918900, 0xE5940000);
+    Process::Write32(0x00918904, 0xE58F4000);
+    Process::Write32(0x00918908, 0xEA000000);
+    Process::Write32(0x00918910, 0xE12FFF1E);
+
+    u32 baseAddress;
+    Process::Read32(0x0091890C, baseAddress);
+    Process::Write32(baseAddress + 0x196C, 0x00000001);
+}
+
+
+class Player {
+public:
+    bool IsSwimming(){
+        u16 a, b;
+        Process::Read16(0x0FFFE064, a); // Always one of these two offsets
+        Process::Read16(0x0FFFDFFC, b);
+        if (a == 1 || b == 1){
+            return true;
+        }
+        return false;
+    }  
+};
+
+void dumpExecutable() {
+    u32 baseAddress = 0x100000;
+    u32 totalSize = 0x93A000;
+    File file;
+    File::Create("sdmc:/megapackPlugin/codeBackups/code_full.bin");
+    if (File::Open(file, "sdmc:/megapackPlugin/codeBackups/code_full.bin", File::WRITE) == 0){
+        file.Dump(baseAddress, totalSize);
+        OSD::Notify("Dumped Executable to: sdmc:/megapackPlugin/codeBackups/code_full.bin");
+    }
+    file.Close();
+}
+
+void dumpStriptExecutable() { // gets rid of variable data stored inside of mc3ds code.bin memory
+    u32 baseAddress = 0x100000;
+    u32 totalSize = 0x73A000;
+    File file;
+    File::Create("sdmc:/megapackPlugin/codeBackups/code_stripped.bin");
+    if (File::Open(file, "sdmc:/megapackPlugin/codeBackups/code_stripped.bin", File::WRITE) == 0){
+        file.Dump(baseAddress, totalSize);
+        OSD::Notify("Dumped Stripped Executable to: sdmc:/megapackPlugin/codeBackups/code_stripped.bin");
+    }
+    file.Close();
+}
+
+void mobController() { // Thanks to Darksiders for Base AR Cheats and allowing us to create this using his codes as references to use and expand the og codes
+    u32 ourVal, baseAddress;
+    std::vector<std::string> mobSelector = {
+        "Player", "Chicken", "Cow", "Mooshroom", "Pig", "Sheep", "Bat",
+        "Wolf", "Ender Dragon", "Villager", "Zombie", "Zombie Pigman", "Ghast",
+        "Silverfish", "Creeper", "Enderman", "Shulker Bullet", "Iron Golem",
+        "Cat", "Snow Golem", "Guardian", "Wither", "EXP Orb", "Zombie Villager",
+        "Shulker", "Rabbit", "Witch", "Llama", "Camera", "Husk", "Stray", "Skeleton",
+        "Endermite", "Evoker", "Vex", "Vindicator", "Polar Bear", "Blaze"
+    };
+    std::vector<u32> mobValues = {
+        0x1E, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, // Player, Chicken, Cow, Mooshroom, Pig, Sheep, Bat
+        0x0B, 0x0C, 0x0E, 0x10, 0x11, 0x13, // Wolf, Dragon, Villager, Zombie, Zombie Pigman, Ghast
+        0x17, 0x18, 0x1A, 0x1C, 0x30, // Silverfish, Creeper, Enderman, Shulker Bullet, Iron Golem
+        0x31, 0x32, 0x3E, 0x41, 0x2E, 0x2D, // Cat, Snow Golem, Guardian, Wither, EXP Orb, Zombie Villager
+        0x33, 0x35, 0x36, 0x38, 0x39, 0x44, 0x45, 0x46, // Shulker, Rabbit, Witch, Llama, Camera, Husk, Stray, Skeleton (0x15 as well)
+        0x49, 0x4A, 0x4C, 0x4D, 0x0D, 0x14 // Endermite, Evoker, Vex, Vindicator, Polar Bear, Blaze
+    };
+    Keyboard kb1("Select a Mob/Entity to Possess:");
+    kb1.Populate(mobSelector);
+    int mobIndex = kb1.Open();
+    if (mobIndex < 0) return;
+    ourVal = mobValues[mobIndex];
+    Process::Read32(0xFFFDF74, baseAddress);
+    Process::Write32(baseAddress+0x278, ourVal);
+    OSD::Notify("Change Player into: " + mobSelector[mobIndex]);
 }
 
 

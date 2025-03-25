@@ -25,12 +25,18 @@ namespace CTRPluginFramework
     void selectAndModifyOffset();
     int getOffset(const std::string &key);
     void creativeMode(MenuEntry *entry);
-    class Player;
-    void initializePaths();
     void checkAndCreateDirectories();
+    void initializePaths();
     void dumpStriptExecutable();
+    void sha256_hash(const uint8_t *data, size_t length, uint8_t *hash);
     void dumpExecutable();
     void mobController();
+    class Player;
     bool IsSwimming();
+    int GetSlotNumber();
+    int GetItemCount();
+    bool IsFlying();
+    bool IsJumping();
+    bool IsIdle();
 }
 #endif

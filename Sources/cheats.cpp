@@ -1,4 +1,5 @@
 #include "cheats.hpp"
+#include "sha256.hpp"
 #include "types.h"
 #include "3ds.h"
 #include <iostream>
@@ -9,6 +10,72 @@
 
 namespace CTRPluginFramework
 {
+    class Player {
+        public:
+            bool IsSwimming() {
+                u16 a, b;
+                Process::Read16(0x0FFFE064, a); // Always one of these two offsets
+                Process::Read16(0x0FFFDFFC, b);
+                if (a == 1 || b == 1){
+                    return true;
+                }
+                return false;
+            }
+            int GetSlotNumber() {
+                u32 slotCount;
+                Process::Read32(0x3502D0E4, slotCount);
+                slotCount++;
+                return slotCount;
+            }
+            int GetItemCount() {
+                u32 itemCount;
+                Process::Read32(0x3504A0FC, itemCount);
+                return itemCount;
+            }
+            bool IsFlying() {
+                u16 flying;
+                Process::Read16(0x3507E5D0, flying);
+                if (flying == 1){
+                    return true;
+                }
+                return false;
+            }
+            bool IsIdle() { // timer require additional logic, add at later date
+                u32 a, b, c, d, e, f, g, h, i, j;
+                Process::Read32(0xB329E8, a);
+                Process::Read32(0xB32948, b);
+                Process::Read32(0xB32A00, c);
+                Process::Read32(0xB32A18, d);
+                Process::Read32(0xB32A30, e);
+                Process::Read32(0xB32A48, f);
+                Process::Read32(0xB32A60, g);
+                Process::Read32(0xB32A78, h);
+                Process::Read32(0xB32A90, i);
+                Process::Read32(0xB32AB0, j);
+                if (a == 0x00 && b == 0x00 && c == 0x00 && d == 0x00 && e == 0x00 && f == 0x00 && g == 0x00 && h == 0x00 && i == 0x00 && j == 0x00) {
+                    return true;
+                }
+                return false;
+            }
+            bool IsJumping() {
+                u32 a, b, c, d, e, f, g, h, i, j;
+                Process::Read32(0xB329E8, a);
+                Process::Read32(0xB32948, b);
+                Process::Read32(0xB32A00, c);
+                Process::Read32(0xB32A18, d);
+                Process::Read32(0xB32A30, e);
+                Process::Read32(0xB32A48, f);
+                Process::Read32(0xB32A60, g);
+                Process::Read32(0xB32A78, h);
+                Process::Read32(0xB32A90, i);
+                Process::Read32(0xB32AB0, j);
+                if (a == 0x00 && b == 0x01 && c == 0x01 && d == 0x01 && e == 0x01 && f == 0x01 && g == 0x01 && h == 0x01 && i == 0x01 && j == 0x01) {
+                    return true;
+                }
+                return false;
+            }
+    };
+
     std::stringstream skinsBjson, mPath;
     u64 processId;
     std::string filename;
@@ -21,14 +88,14 @@ namespace CTRPluginFramework
         processId = Process::GetTitleID();
         skinsBjson << "sdmc:/luma/titles/000" << std::hex << processId << "/romfs/resourcepacks/skins/skinpacks/skins.bjson";
         mPath << "sdmc:/luma/titles/000" << std::hex << processId << "/";
-        std::string modsPath = mPath.str();
-        std::string filename = skinsBjson.str();
+        modsPath = mPath.str();
+        filename = skinsBjson.str();
     }
 
     void checkAndCreateDirectories() {
-        std::string megapackDir = "sdmc:/megapackPlugin";
-        std::string megapackWorldDir = "sdmc:/megapackPlugin/worldBackups";
-        std::string megapackCodeDir = "sdmc:/megapackPlugin/codeBackups";
+        megapackDir = "sdmc:/megapackPlugin";
+        megapackWorldDir = "sdmc:/megapackPlugin/worldBackups";
+        megapackCodeDir = "sdmc:/megapackPlugin/codeBackups";
         if (Directory::IsExists(megapackDir) == 0){
             Directory::Create(megapackDir);
             Directory::Create(megapackWorldDir);
@@ -43,32 +110,16 @@ void dropEverything(MenuEntry *entry){
         OSD::Notify("Use ZL+ZR to Drop Item in Hand.");
         myInt++;
     }
-    if (hidKeysDown() & (KEY_ZL | KEY_ZR))
-    {
-        Process::Write32(0xB329E8, 0x02);
-        Process::Write32(0xB32948, 0x02);
-        Process::Write32(0xB32A00, 0x02);
-        Process::Write32(0xB32A18, 0x02);
-        Process::Write32(0xB32A30, 0x02);
-        Process::Write32(0xB32A48, 0x02);
-        Process::Write32(0xB32A60, 0x02);
-        Process::Write32(0xB32A78, 0x02);
-        Process::Write32(0xB32A90, 0x02);
-        Process::Write32(0xB32AB0, 0x02);
-        svcSleepThread(16666);
-        Process::Write32(0xB329E8, 0x00);
-        Process::Write32(0xB32948, 0x00);
-        Process::Write32(0xB32A00, 0x00);
-        Process::Write32(0xB32A18, 0x00);
-        Process::Write32(0xB32A30, 0x00);
-        Process::Write32(0xB32A48, 0x00);
-        Process::Write32(0xB32A60, 0x00);
-        Process::Write32(0xB32A78, 0x00);
-        Process::Write32(0xB32A90, 0x00);
-        Process::Write32(0xB32AB0, 0x00);
-        svcSleepThread(16666);
+    Process::Write32(0xB329F8, 0x8F0004);
+    Process::Write32(0xB32A10, 0x8F0004);
+    Process::Write32(0xB32A28, 0x8F0004);
+    Process::Write32(0xB32A40, 0x8F0004);
+    Process::Write32(0xB32A58, 0x8F0004);
+    Process::Write32(0xB32A70, 0x8F0004);
+    Process::Write32(0xB32A88, 0x8F0004);
+    Process::Write32(0xB32AA0, 0x8F0004);
+    Process::Write32(0xB32AA8, 0x8F0004);
     }
-}
 }
 
 void ninetyFov(MenuEntry *entry){
@@ -379,9 +430,9 @@ void backupWorld(){
         u32 getBaseAddress = Utils::Search(startAddress, size, valToSearch);
         if (getBaseAddress != 0x00){
             OSD::Notify(Utils::Format("Found Save Address at: 0x%X", getBaseAddress));
-            File::Create(Utils::Format("sdmc:/megapackPlugin/worldBackups/slt%u.cdb", i));
+            File::Create(megapackWorldDir + Utils::Format("/slt%u.cdb", i));
 
-            if (File::Open(file, Utils::Format("sdmc:/megapackPlugin/worldBackups/slt%u.cdb", i), File::WRITE) != 0){
+            if (File::Open(file, megapackWorldDir + Utils::Format("/slt%u.cdb", i), File::WRITE) != 0){
                 OSD::Notify("Failed to open the CDB Slot file!");
                 return;
             } else{
@@ -414,28 +465,15 @@ void creativeMode(MenuEntry *entry){
     Process::Write32(baseAddress + 0x196C, 0x00000001);
 }
 
-
-class Player {
-public:
-    bool IsSwimming(){
-        u16 a, b;
-        Process::Read16(0x0FFFE064, a); // Always one of these two offsets
-        Process::Read16(0x0FFFDFFC, b);
-        if (a == 1 || b == 1){
-            return true;
-        }
-        return false;
-    }  
-};
-
 void dumpExecutable() {
     u32 baseAddress = 0x100000;
     u32 totalSize = 0x93A000;
     File file;
-    File::Create("sdmc:/megapackPlugin/codeBackups/code_full.bin");
-    if (File::Open(file, "sdmc:/megapackPlugin/codeBackups/code_full.bin", File::WRITE) == 0){
+    File::Create(megapackCodeDir + "/code_full.bin");
+    if (File::Open(file, megapackCodeDir + "/code_full.bin", File::WRITE) == 0){
         file.Dump(baseAddress, totalSize);
-        OSD::Notify("Dumped Executable to: sdmc:/megapackPlugin/codeBackups/code_full.bin");
+        MessageBox("Notice", "Dumped Executable to:\n" + megapackCodeDir, DialogType::DialogOk, ClearScreen::Both)();
+        OSD::Notify("Dumped Executable to: " + megapackCodeDir);
     }
     file.Close();
 }
@@ -444,10 +482,11 @@ void dumpStriptExecutable() { // gets rid of variable data stored inside of mc3d
     u32 baseAddress = 0x100000;
     u32 totalSize = 0x73A000;
     File file;
-    File::Create("sdmc:/megapackPlugin/codeBackups/code_stripped.bin");
-    if (File::Open(file, "sdmc:/megapackPlugin/codeBackups/code_stripped.bin", File::WRITE) == 0){
+    File::Create(megapackCodeDir + "/code_stripped.bin");
+    if (File::Open(file, megapackCodeDir + "/code_stripped.bin", File::WRITE) == 0){
         file.Dump(baseAddress, totalSize);
-        OSD::Notify("Dumped Stripped Executable to: sdmc:/megapackPlugin/codeBackups/code_stripped.bin");
+        MessageBox("Notice", "Dumped Stripped Executable to:\n" + megapackCodeDir, DialogType::DialogOk, ClearScreen::Both)();
+        OSD::Notify("Dumped Stripped Executable to: " + megapackCodeDir);
     }
     file.Close();
 }
@@ -478,6 +517,13 @@ void mobController() { // Thanks to Darksiders for Base AR Cheats and allowing u
     Process::Read32(0xFFFDF74, baseAddress);
     Process::Write32(baseAddress+0x278, ourVal);
     OSD::Notify("Change Player into: " + mobSelector[mobIndex]);
+}
+
+void sha256_hash(const uint8_t *data, size_t length, uint8_t *hash) {
+    SHA256_CTX ctx;
+    sha256_init(&ctx);
+    sha256_update(&ctx, data, length);
+    sha256_final(&ctx, hash);
 }
 
 

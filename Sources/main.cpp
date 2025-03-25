@@ -2,6 +2,7 @@
 #include "csvc.h"
 #include <CTRPluginFramework.hpp>
 #include "cheats.hpp"
+#include "sha256.hpp"
 #include <fstream>
 #include <stdio.h>
 #include <stdlib.h>
@@ -13,10 +14,7 @@
 namespace CTRPluginFramework
 {
     Handle  processHandle;
-    //std::stringstream stringStream;
     u64 titleID = Process::GetTitleID();
-    //stringStream << "sdmc:/luma/titles/000" << std::hex << titleID << "/";
-    //std::string modsPath = stringStream.str();  // Store formatted string
 
     // This patch the NFC disabling the touchscreen when scanning an amiibo, which prevents ctrpf to be used
     static void    ToggleTouchscreenForceOn(void)
@@ -86,7 +84,6 @@ exit:
         OSD::Notify("Enabled VFP Mode for Minecraft 3DS.");
     #endif
 
-    settings.CloseMenuWithB = true;
     ToggleTouchscreenForceOn();
 
     std::string path = "sdmc:/luma/config.ini";
@@ -157,10 +154,11 @@ exit:
         funFolder->Append(new MenuEntry("Better Minecart Physics", betterMinecartPhysics));
         funFolder->Append(new MenuEntry("Remove (most) Mob Heads", removeHeads));
         funFolder->Append(new MenuEntry("Every Mob/Player Spins", everythingSpinny));
+        funFolder->Append(new MenuEntry("Walk Forward", dropEverything));
         //funFolder->Append(new MenuEntry("Creative Mode", creativeMode));
         toolsFolder->Append(new MenuEntry("Player Model Editor", nullptr, [](MenuEntry *entry)
         {
-            if (MessageBox("Are you Sure?", "The Model Editor will Permanately Change your Skin Attributes.", DialogType::DialogOkCancel, ClearScreen::Both)()){
+            if (MessageBox("Are you Sure?", "The Model Editor will Permanately Change your Skin Attributes.\nAnd requires the game to be Restarted for Changes to Take Effect.", DialogType::DialogOkCancel, ClearScreen::Both)()){
                 selectAndModifyOffset();
             } else{
                 OSD::Notify("Operation Cancled.");
@@ -326,7 +324,7 @@ exit:
         }));
         toolsFolder->Append(new MenuEntry("World Extractor", nullptr, [](MenuEntry *entry)
         {
-            if (MessageBox("WARNING - Are You Sure?", "World Extractor will Extract your Currently Running World if you're in one. The plugin will freeze, and can take up a-lot of SDMC Space (5MiB->50MiB) and can bloat the DCIM Camera Directory, please wait (30s->45s) for the plugin to Finish. Once started, you cannot cancel the operation.\n\nNote: These worlds once extracted will need to have the headers rebuilt.", DialogType::DialogOkCancel, ClearScreen::Both)()){
+            if (MessageBox("WARNING - Are You Sure?", "World Extractor will Extract your Currently Running World if you're in one. The plugin will freeze, and can take up a-lot of SDMC Space (5MiB->50MiB), please wait (45s->60s) for the Plugin to Finish. Once started, you cannot cancel the operation.\n\nNote: These worlds once extracted will need to have the headers rebuilt.", DialogType::DialogOkCancel, ClearScreen::Both)()){
                 backupWorld();
             } else{
                 OSD::Notify("Operation Cancled.");

@@ -10,7 +10,7 @@ namespace CTRPluginFramework
     using StringVector = std::vector<std::string>;
     void dropEverything(MenuEntry *entry);
     void ninetyFov(MenuEntry *entry);
-    void defaultCodes(MenuEntry *entry);
+    void defaultCodes();
     void removeMobCap(MenuEntry *entry);
     void itemExpLimit(MenuEntry *entry);
     void enhancedParticles(MenuEntry *entry);
@@ -31,6 +31,8 @@ namespace CTRPluginFramework
     void sha256_hash(const uint8_t *data, size_t length, uint8_t *hash);
     void dumpExecutable();
     void mobController();
+    void dynaClouds(MenuEntry *entry);
+    void thickFogWeather(MenuEntry *entry);
     class Player;
     bool IsSwimming();
     int GetSlotNumber();

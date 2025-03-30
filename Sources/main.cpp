@@ -141,10 +141,10 @@ exit:
     void InitMenu(PluginMenu &menu)
     {
         MenuFolder *codesFolder = new MenuFolder("Default Codes");
+        MenuFolder *miscFolder = new MenuFolder("Misc Codes");
         MenuFolder *funFolder = new MenuFolder("Fun Codes");
         MenuFolder *configFolder = new MenuFolder("Config");
         MenuFolder *toolsFolder = new MenuFolder("Tools");
-        codesFolder->Append(new MenuEntry("Megapack Default Codes", defaultCodes));
         codesFolder->Append(new MenuEntry("Drop Everything In-Hand", dropEverything));
         codesFolder->Append(new MenuEntry("Disable Ground Item/EXP Limit", itemExpLimit));
         codesFolder->Append(new MenuEntry("Remove Mob Spawn-Cap", removeMobCap));
@@ -156,6 +156,8 @@ exit:
         funFolder->Append(new MenuEntry("Every Mob/Player Spins", everythingSpinny));
         funFolder->Append(new MenuEntry("Walk Forward", dropEverything));
         //funFolder->Append(new MenuEntry("Creative Mode", creativeMode));
+        miscFolder->Append(new MenuEntry("Dynamic Clouds", dynaClouds));
+        miscFolder->Append(new MenuEntry("Dynamic Thick Fog Weather", thickFogWeather));
         toolsFolder->Append(new MenuEntry("Player Model Editor", nullptr, [](MenuEntry *entry)
         {
             if (MessageBox("Are you Sure?", "The Model Editor will Permanately Change your Skin Attributes.\nAnd requires the game to be Restarted for Changes to Take Effect.", DialogType::DialogOkCancel, ClearScreen::Both)()){
@@ -349,6 +351,7 @@ exit:
         
         menu += codesFolder;
         menu += funFolder;
+        menu += miscFolder;
         menu += configFolder;
         menu += toolsFolder;
     }
@@ -388,6 +391,7 @@ exit:
             checkAndCreateDirectories();
             OSD::Notify("MegaPack has Successfully Loaded.");
             OSD::Notify("Press 'select' to Open Menu.");
+            defaultCodes();
             svcSleepThread(500000000);
             
             // Start Menu

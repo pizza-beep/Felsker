@@ -7,9 +7,43 @@
 #include <unordered_map>
 #include <sstream>
 #include <cstdint>
+#include <random>
 
 namespace CTRPluginFramework
 {
+    std::random_device rd;
+    std::mt19937 gen(rd());    
+    
+    float getChance(){
+        std::uniform_real_distribution<float> myCnt(0.0f, 10.0f);
+        return myCnt(gen);
+    }
+
+    float getWeatherAmount(){
+        std::uniform_real_distribution<float> wtherSetAmnt(0.01f, 0.05f);
+        return wtherSetAmnt(gen);
+    }
+
+    float getFogDensity(){
+        std::uniform_real_distribution<float> fgDnsty(60.0f, 80.0f);
+        return fgDnsty(gen);
+    }
+
+    int getTimerCountFog(){
+        std::uniform_int_distribution<u32> tmrFgCnt(40000, 55000);
+        return tmrFgCnt(gen);
+    }
+
+    int getTimerCountClouds(){
+        std::uniform_int_distribution<u32> tmrCldCnt(750, 1500);
+        return tmrCldCnt(gen);
+    }
+
+    float getCloudRange(){
+        std::uniform_real_distribution<float> cldRange(0.001f, 0.01f);
+        return cldRange(gen);
+    }
+    
     class Player {
         public:
             bool IsSwimming() {
@@ -134,17 +168,16 @@ void ninetyFov(MenuEntry *entry){
 }
 }
 
-void defaultCodes(MenuEntry *entry){
+void defaultCodes(){
     if (!Process::IsPaused()){
     static int myInt = 1;
     if (myInt == 1){
         OSD::Notify("Set Megapack Default Codes.");
         myInt++;
     }
-    float swimVal = 0.075;
-    float viewBobVal = 10.0;
-    Process::WriteFloat(0x4EA090, swimVal);
-    Process::WriteFloat(0x3CF2A0, viewBobVal);
+    Process::WriteFloat(0x4EA090, 0.045);
+    Process::WriteFloat(0x3CF2A0, 10.0);
+    Process::WriteFloat(0x4E61D0, 2.5);
 }
 }
 
@@ -525,6 +558,122 @@ void sha256_hash(const uint8_t *data, size_t length, uint8_t *hash) {
     sha256_update(&ctx, data, length);
     sha256_final(&ctx, hash);
 }
+
+void dynaClouds(MenuEntry *entry) {
+    static u32 timerCount = 1000;
+    static u32 timer = 0;
+    static float baseCloudHeight = 0.33;
+    static float baseCloudThickness = 4.0;
+    static float heightRate = 0.0035;
+    static float thicknessRate = 0.0035;
+    static bool increasing = true; 
+    u32 chAdd = 0x3C5398;
+    u32 ctAdd = 0x3C53BC;
+    float a, b;
+    
+    Process::ReadFloat(ctAdd, a);
+    Process::ReadFloat(chAdd, b);
+    
+    if (increasing) {
+        a += thicknessRate;
+        b -= heightRate;
+        timer++;
+        if (timer == timerCount) {
+            increasing = false;
+        }
+    } else {
+        a -= thicknessRate;
+        b += heightRate;
+        timer--;
+        if (timer == 0) {
+            increasing = true;
+            timerCount = getTimerCountClouds();
+
+            
+            heightRate = getCloudRange();
+            thicknessRate = getCloudRange();
+        }
+    }
+    Process::WriteFloat(ctAdd, a);
+    Process::WriteFloat(chAdd, b);
+}
+
+void thickFogWeather(MenuEntry *entry) {
+    static u32 timer = 0;
+    static float a, b;
+    float baseFog = 4.0f;
+    static u32 timerCount = 30000;
+    static float fogDensity;
+    static float weatherSetAmount; 
+    static bool bWeather = false; 
+    static bool bFadingIn = false;
+    static bool bFadingOut = false;
+    static bool bHolding = false; 
+    float weatherChance = 1.26f; 
+    u32 fogAdd = 0x3C7F9C; 
+
+    Process::ReadFloat(fogAdd, a); 
+
+    if (bWeather) { 
+        // ---- Fading In ----
+        if (bFadingIn) {
+            if (a < fogDensity) {
+                b = a + weatherSetAmount;
+                if (b > fogDensity) b = fogDensity; 
+                Process::WriteFloat(fogAdd, b);
+            } else {
+                bFadingIn = false;
+                bHolding = true; 
+                timer = 0;
+            }
+        }
+
+        // ---- Holding at Max Fog ----
+        else if (bHolding) {
+            if (timer >= timerCount) {
+                bHolding = false;
+                bFadingOut = true;
+                timer = 0; 
+            } else {
+                timer++;
+            }
+        }
+
+        // ---- Fading Out ----
+        else if (bFadingOut) {
+            if (a > baseFog) {
+                b = a - weatherSetAmount;
+                if (b < baseFog) b = baseFog;
+                Process::WriteFloat(fogAdd, b);
+            } else {
+                bFadingOut = false;
+                bWeather = false;
+                timerCount = getTimerCountFog();
+            }
+        }
+    }
+
+    // ---- Decide if Weather Starts ----
+    else {
+        if (timer >= timerCount) {
+            float chance = getChance();
+            if (weatherChance > chance) {
+                weatherSetAmount = getWeatherAmount();
+                fogDensity = getFogDensity();
+
+                bWeather = true;
+                bFadingIn = true;
+                timer = 0;
+            } else {
+                timer = 0;
+            }
+        } else {
+            timer++;
+        }
+    }
+}
+
+
 
 
 }

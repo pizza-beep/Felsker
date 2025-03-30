@@ -25,7 +25,7 @@ namespace CTRPluginFramework
     }
 
     float getFogDensity(){
-        std::uniform_real_distribution<float> fgDnsty(60.0f, 80.0f);
+        std::uniform_real_distribution<float> fgDnsty(35.0f, 80.0f);
         return fgDnsty(gen);
     }
 

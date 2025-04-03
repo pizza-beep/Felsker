@@ -33,6 +33,7 @@ namespace CTRPluginFramework
     void mobController();
     void dynaClouds(MenuEntry *entry);
     void thickFogWeather(MenuEntry *entry);
+    void getCstickMovement(MenuEntry *entry);
     class Player;
     bool IsSwimming();
     int GetSlotNumber();

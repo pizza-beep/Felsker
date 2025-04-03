@@ -43,7 +43,7 @@ namespace CTRPluginFramework
         std::uniform_real_distribution<float> cldRange(0.001f, 0.01f);
         return cldRange(gen);
     }
-    
+
     class Player {
         public:
             bool IsSwimming() {
@@ -284,7 +284,6 @@ bool displayPlayerCoordsTopScreen(const Screen& screen){
     screen.Draw("EXP Rendered: " + Utils::Format("%u", exp), 10, 105, Color::White, Color::Black);
     screen.Draw("Mobs Rendered: " + Utils::Format("%u", noe), 10, 115, Color::White, Color::Black);
     screen.Draw("Items Rendered: " + Utils::Format("%u", itm), 10, 125, Color::White, Color::Black);
-    // screen.Draw("Entity In-Hand: " + Utils::Format("%u", mid), 10, 85, Color::White, Color::Black);
 	return true;
 }
 
@@ -671,6 +670,36 @@ void thickFogWeather(MenuEntry *entry) {
             timer++;
         }
     }
+}
+
+void getCstickMovement(MenuEntry *entry) {
+    circlePosition cstick;
+    hidScanInput();
+    hidCstickRead(&cstick);
+
+    int cstickX = cstick.dx;
+    int cstickY = cstick.dy;
+
+    Process::Write16(0xB329FC, cstickX);
+    Process::Write16(0xB329FE, cstickY);
+    Process::Write16(0xB32A14, cstickX);
+    Process::Write16(0xB32A16, cstickY);
+    Process::Write16(0xB32A2C, cstickX);
+    Process::Write16(0xB32A2E, cstickY);
+    Process::Write16(0xB32A44, cstickX);
+    Process::Write16(0xB32A46, cstickY);
+    Process::Write16(0xB32A5C, cstickX);
+    Process::Write16(0xB32A5E, cstickY);
+    Process::Write16(0xB32A74, cstickX);
+    Process::Write16(0xB32A76, cstickY);
+    Process::Write16(0xB32A8C, cstickX);
+    Process::Write16(0xB32A8E, cstickY);
+    Process::Write16(0xB32AA4, cstickX);
+    Process::Write16(0xB32AA6, cstickY);
+    Process::Write16(0xB32AAC, cstickX);
+    Process::Write16(0xB32AAE, cstickY);
+
+    svcSleepThread(3200000ULL); // added 3.2ms delay because sometimes menu doesn't open when pressing button combo
 }
 
 

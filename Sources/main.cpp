@@ -6,6 +6,7 @@
 #include <fstream>
 #include <stdio.h>
 #include <stdlib.h>
+#include <thread>
 #include <string>
 #include <iomanip>   // Include for std::hex
 #include <sstream>
@@ -84,6 +85,7 @@ exit:
         OSD::Notify("Enabled VFP Mode for Minecraft 3DS.");
     #endif
 
+    Controller::Update();
     ToggleTouchscreenForceOn();
 
     std::string path = "sdmc:/luma/config.ini";
@@ -140,12 +142,13 @@ exit:
 
     void InitMenu(PluginMenu &menu)
     {
+        menu += new MenuEntry("CTRPF C-Stick Fix", getCstickMovement);
         MenuFolder *codesFolder = new MenuFolder("Default Codes");
         MenuFolder *miscFolder = new MenuFolder("Misc Codes");
         MenuFolder *funFolder = new MenuFolder("Fun Codes");
         MenuFolder *configFolder = new MenuFolder("Config");
         MenuFolder *toolsFolder = new MenuFolder("Tools");
-        codesFolder->Append(new MenuEntry("Drop Everything In-Hand", dropEverything));
+        // codesFolder->Append(new MenuEntry("Drop Everything In-Hand", dropEverything));
         codesFolder->Append(new MenuEntry("Disable Ground Item/EXP Limit", itemExpLimit));
         codesFolder->Append(new MenuEntry("Remove Mob Spawn-Cap", removeMobCap));
         codesFolder->Append(new MenuEntry("Disable Mob-Spawning", stopMobSpawns));

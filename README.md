@@ -8,7 +8,7 @@
 ### Feature List:
 | Code Types | isTool | isEnhancement | isFunCode | Description |
 | ---------- | ------ | ------------- | --------- | ----------- |
-| CStick Fix | ✓      | ✓            | ✗         | Fixes the C-Stick because of CTRPF being CTRPF.                                                                                   |
+| CTRPF C-Stick Fix | ✓      | ✓            | ✗         | Fixes the C-Stick because of CTRPF being CTRPF.                                                                                   |
 | Default Codes | ✗   | ✓            | ✗         | Adds Megapack Default at game Startup, cannot be configured or changed. Adds Aquatic Swimming Speed and Viewbobbing Improvements. |
 | Disable Item + EXP Limits | ✗ | ✓  | ✗         | Disables the Item and EXP Limit on Ground to stop user items from disappearing upon death.                                        |
 | Remove Mob Spawn-Cap | ✗ | ✓       | ✗         | Removes the Spawn-Cap of Mobs allows for more mobs to spawn in the World, and be saved to Worlds.                                 |

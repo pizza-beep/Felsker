@@ -141,7 +141,7 @@ void dropEverything(MenuEntry *entry){
     if (!Process::IsPaused()){
     static int myInt = 1;
     if (myInt == 1){
-        OSD::Notify("Use ZL+ZR to Drop Item in Hand.");
+        OSD::Notify("Use ZL+ZR to drop items in hand.");
         myInt++;
     }
     Process::Write32(0xB329F8, 0x8F0004);
@@ -172,7 +172,7 @@ void defaultCodes(){
     if (!Process::IsPaused()){
     static int myInt = 1;
     if (myInt == 1){
-        OSD::Notify("Set Megapack Default Codes.");
+        OSD::Notify("Set Megapack default codes.");
         myInt++;
     }
     Process::WriteFloat(0x4EA090, 0.045);
@@ -185,7 +185,7 @@ void removeMobCap(MenuEntry *entry){
     if (!Process::IsPaused()){
     static int myInt = 1;
     if (myInt == 1){
-        OSD::Notify("Removed the Mob Spawn-Limit.");
+        OSD::Notify("Removed the mob spawn limit.");
         myInt++;
     }
     Process::Write32(0xA33898, 0x00);
@@ -221,7 +221,7 @@ void itemExpLimit(MenuEntry *entry){
     if (!Process::IsPaused()){
     static int myInt = 1;
     if (myInt == 1){
-        OSD::Notify("Removed Ground-Item Limit.");
+        OSD::Notify("Removed ground item limit.");
         myInt++;
     }
     Process::Write32(0xA339C0, 0x00);
@@ -304,7 +304,7 @@ void removeHeads(MenuEntry *entry){
     if (!Process::IsPaused()){
     static int myInt = 1;
     if (myInt == 1){
-        OSD::Notify("Removed Most Mob Heads.");
+        OSD::Notify("Removed mob heads.");
         myInt++;
     }
     Process::WriteFloat(0x21F42C, 0.0);
@@ -541,7 +541,7 @@ void mobController() { // Thanks to Darksiders for Base AR Cheats and allowing u
         0x33, 0x35, 0x36, 0x38, 0x39, 0x44, 0x45, 0x46, // Shulker, Rabbit, Witch, Llama, Camera, Husk, Stray, Skeleton (0x15 as well)
         0x49, 0x4A, 0x4C, 0x4D, 0x0D, 0x14 // Endermite, Evoker, Vex, Vindicator, Polar Bear, Blaze
     };
-    Keyboard kb1("Select a Mob/Entity to Possess:");
+    Keyboard kb1("Select a Mob/Entity to possess:");
     kb1.Populate(mobSelector);
     int mobIndex = kb1.Open();
     if (mobIndex < 0) return;

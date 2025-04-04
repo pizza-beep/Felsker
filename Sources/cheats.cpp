@@ -225,7 +225,7 @@ void itemExpLimit(MenuEntry *entry){
         myInt++;
     }
     Process::Write32(0xA339C0, 0x00);
-    Process::Write32(0xA339AC, 0x00);
+    Process::Write32(0xA339C4, 0x00);
 }
 }
 

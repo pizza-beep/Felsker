@@ -119,8 +119,8 @@ exit:
         {
             file.Write(content.c_str(), content.size());
             file.Close();
-            OSD::Notify("Game Patching Enabled. The Game will Crash.");
-            OSD::Notify("Please Restart the Game for the Patch to be applied.");
+            OSD::Notify("Game patching enabled. The game will crash.");
+            OSD::Notify("Please restart the game for the patch to be applied.");
             svcSleepThread(5000000000ULL);
             Process::ReturnToHomeMenu();
         }
@@ -163,7 +163,7 @@ exit:
         miscFolder->Append(new MenuEntry("Dynamic Thick Fog Weather", thickFogWeather));
         toolsFolder->Append(new MenuEntry("Player Model Editor", nullptr, [](MenuEntry *entry)
         {
-            if (MessageBox("Are you Sure?", "The Model Editor will Permanately Change your Skin Attributes.\nAnd requires the game to be Restarted for Changes to Take Effect.", DialogType::DialogOkCancel, ClearScreen::Both)()){
+            if (MessageBox("Are you sure?", "The Model Editor will permanately change your skin attributes.\nThis requires the game to be restarted for changes to take effect.", DialogType::DialogOkCancel, ClearScreen::Both)()){
                 selectAndModifyOffset();
             } else{
                 OSD::Notify("Operation Cancled.");
@@ -195,8 +195,8 @@ exit:
                 Process::WriteFloat(0x988BB8, userValue);
 
                 OSD::Notify(Utils::Format("Written: %.2f to Scaling Address'", userValue));
-                OSD::Notify("Requires a World-Restart, or for you to Load a World.");
-                OSD::Notify("This does NOT scale the player Skin.");
+                OSD::Notify("Requires a world restart, or for you to load a World.");
+                OSD::Notify("This does NOT scale the player skin.");
         }
         }));
         funFolder->Append(new MenuEntry("Change Player Arm-Length", nullptr, [](MenuEntry *entry)
@@ -254,7 +254,7 @@ exit:
         {
             float userValue;
 
-            Keyboard kb("Enter a Float Value (Recomended 0->30):");
+            Keyboard kb("Enter a float Value (Recomended 0->30):");
             float input;
 
             if (kb.Open(input) != -1)
@@ -277,7 +277,7 @@ exit:
         {
             float userValue;
 
-            Keyboard kb("Enter a Float Value (Recomended 0->5):");
+            Keyboard kb("Enter a float value (Recomended 0->5):");
             float input;
 
             if (kb.Open(input) != -1)
@@ -315,7 +315,7 @@ exit:
         configFolder->Append(new MenuEntry("Change FOV", nullptr, [](MenuEntry *entry)
         {
             float userValue;
-            Keyboard kb("Enter a Float Value (Recomended 50->130):");
+            Keyboard kb("Enter a float value (Recomended 50->130):");
             float input;
 
             if (kb.Open(input) != -1)
@@ -329,7 +329,7 @@ exit:
         }));
         toolsFolder->Append(new MenuEntry("World Extractor", nullptr, [](MenuEntry *entry)
         {
-            if (MessageBox("WARNING - Are You Sure?", "World Extractor will Extract your Currently Running World if you're in one. The plugin will freeze, and can take up a-lot of SDMC Space (5MiB->50MiB), please wait (45s->60s) for the Plugin to Finish. Once started, you cannot cancel the operation.\n\nNote: These worlds once extracted will need to have the headers rebuilt.", DialogType::DialogOkCancel, ClearScreen::Both)()){
+            if (MessageBox("WARNING - Are you sure?", "World Extractor will extract your currently running world if you're in one. The plugin will freeze, and can take up a-lot of SDMC Space (5MiB->50MiB), please wait (45s->60s) for the plugin to finish. Once started, you cannot cancel the operation.\n\nNote: These worlds once extracted will need to have the headers rebuilt.", DialogType::DialogOkCancel, ClearScreen::Both)()){
                 backupWorld();
             } else{
                 OSD::Notify("Operation Cancled.");
@@ -337,7 +337,7 @@ exit:
         }));
         toolsFolder->Append(new MenuEntry("Dump Executable", nullptr, [](MenuEntry *entry)
         {
-            if (MessageBox("Notice", "Dumping the Executable Could take some time. Continue?", DialogType::DialogOkCancel, ClearScreen::Both)()){
+            if (MessageBox("Notice", "Dumping the executable could take some time. Continue?", DialogType::DialogOkCancel, ClearScreen::Both)()){
                 dumpExecutable();
             } else{
                 OSD::Notify("Operation Cancled.");
@@ -345,10 +345,10 @@ exit:
         }));
         toolsFolder->Append(new MenuEntry("Dump Stripped Executable", nullptr, [](MenuEntry *entry)
         {
-            if (MessageBox("Notice", "Dumping the Stripped Executable Could take some time. Continue?", DialogType::DialogOkCancel, ClearScreen::Both)()){
+            if (MessageBox("Notice", "Dumping the stripped executable Could take some time. Continue?", DialogType::DialogOkCancel, ClearScreen::Both)()){
                 dumpStriptExecutable();
             } else{
-                OSD::Notify("Operation Cancled.");
+                OSD::Notify("Operation Cancelled.");
             }
         }));
         
@@ -393,7 +393,7 @@ exit:
             initializePaths();
             checkAndCreateDirectories();
             OSD::Notify("MegaPack has Successfully Loaded.");
-            OSD::Notify("Press 'select' to Open Menu.");
+            OSD::Notify("Press 'select' to open menu.");
             defaultCodes();
             svcSleepThread(500000000);
             

@@ -394,6 +394,7 @@ exit:
             checkAndCreateDirectories();
             OSD::Notify("MegaPack has successfully loaded.");
             OSD::Notify("Press Select to open menu.");
+	    OSD::Notify("IMPORTANT: Ensure Input Redirection is enabled in Rosalina.");
             defaultCodes();
             svcSleepThread(500000000);
             

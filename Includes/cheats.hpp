@@ -35,6 +35,8 @@ namespace CTRPluginFramework
     void thickFogWeather(MenuEntry *entry);
     void getCstickMovement(MenuEntry *entry);
     void displayMegapackVersion();
+    void changeSkinToCustom();
+    std::vector<std::string> list3dstFiles(const std::string& path);
     class Player;
     bool IsSwimming();
     int GetSlotNumber();

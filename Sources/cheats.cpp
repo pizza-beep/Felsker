@@ -3,9 +3,11 @@
 #include "types.h"
 #include "3ds.h"
 #include <iostream>
+#include <dirent.h>
 #include <fstream>
 #include <unordered_map>
 #include <sstream>
+#include <cstring>
 #include <cstdint>
 #include <random>
 
@@ -117,6 +119,7 @@ namespace CTRPluginFramework
     std::string megapackDir;
     std::string megapackWorldDir;
     std::string megapackCodeDir;
+    std::string megapackSkinsDir;
 
     void initializePaths() {
         processId = Process::GetTitleID();
@@ -130,10 +133,12 @@ namespace CTRPluginFramework
         megapackDir = "sdmc:/megapackPlugin";
         megapackWorldDir = "sdmc:/megapackPlugin/worldBackups";
         megapackCodeDir = "sdmc:/megapackPlugin/codeBackups";
+        megapackSkinsDir = "sdmc:/megapackPlugin/Skins";
         if (Directory::IsExists(megapackDir) == 0){
             Directory::Create(megapackDir);
             Directory::Create(megapackWorldDir);
             Directory::Create(megapackCodeDir);
+            Directory::Create(megapackSkinsDir);
         }
     }
 
@@ -709,6 +714,38 @@ void displayMegapackVersion() {
     Process::WriteString(0x340E883C, buffer);
 }
 
+//void changeSkinToCustom() {
+  //  static u32 address;
+  //  std::string skinsDir = megapackSkinsDir;
+  //  OSD::Notify(skinsDir);
+  //  std::vector<u64> buffer(0x4000);
+  //  std::vector<std::string> skinFiles;
+  //  Directory dir;
+  //  Directory::Open(dir, skinsDir);
+  //  dir.ListFiles(skinFiles);
+  //  Keyboard kb1("Select a Skin:"); 
+  //  kb1.Populate(skinFiles);
+  //  int skinIndex = kb1.Open();
+  //  if (skinIndex < 0) return;
+  //  std::string skinName = skinFiles[skinIndex];
+  //  std::string selectedSkin = skinsDir + "/" + skinName;
 
+  //  if (address == NULL)
+
+
+  //  u32 address = 0x30910000;
+  //  File file;
+  //  if (File::Open(file, selectedSkin, File::READ) == 0){
+  //  file.Seek(0x20);
+  //  file.Read(buffer.data(), 0x4000);
+  //  
+  //  for (size_t i = 0; i < 0x4000; i += 8) {
+  //  u64 value = 0;
+  //  std::memcpy(&value, &buffer[i], 8); // Copy 8 bytes from buffer into value
+  //  Process::Write64(address + i, value);        // Write 64-bit value to memory
+  //  }
+  //  //    }
+  //  file.Close();
+  //  }
 
 }

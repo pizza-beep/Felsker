@@ -170,11 +170,6 @@ void ninetyFov(MenuEntry *entry){
 
 void defaultCodes(){
     if (!Process::IsPaused()){
-    static int myInt = 1;
-    if (myInt == 1){
-        OSD::Notify("Enable MegaPack default codes.");
-        myInt++;
-    }
     Process::WriteFloat(0x4EA090, 0.045);
     Process::WriteFloat(0x3CF2A0, 10.0);
     Process::WriteFloat(0x4E61D0, 2.5);
@@ -702,6 +697,17 @@ void getCstickMovement(MenuEntry *entry) {
     svcSleepThread(3200000ULL); // added 3.2ms delay because sometimes menu doesn't open when pressing button combo
 }
 
+void displayMegapackVersion() {
+    std::string patchPath = modsPath + "romfs/notes/patch.txt";
+    char buffer[7] = {0};
+    File file;
+    if (File::Open(file, patchPath, File::READ) == 0){
+        file.Seek(0x17);
+        file.Read(buffer, 6);
+    }
+    file.Close();
+    Process::WriteString(0x340E883C, buffer);
+}
 
 
 

@@ -34,6 +34,7 @@ namespace CTRPluginFramework
     void dynaClouds(MenuEntry *entry);
     void thickFogWeather(MenuEntry *entry);
     void getCstickMovement(MenuEntry *entry);
+    void displayMegapackVersion();
     class Player;
     bool IsSwimming();
     int GetSlotNumber();

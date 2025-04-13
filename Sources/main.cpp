@@ -367,7 +367,7 @@ exit:
         u64 jpnTID = 1125899908414720;
         PluginMenu *menu = nullptr;
         std::string mgapckTxt = "MegaPack Plugin - ";
-        std::string abtPlg = "A CTRPF Plugin meant for working with Modernization MegaPack.\nDeveloped by: Cracko298\n\nWith help from:\n- wyndchyme\n- Zexlo\n- RaiRai6895\n- Darksiders (Kilix)";
+        std::string abtPlg = "A CTRPF Plugin meant for working with Modernization MegaPack.\nDeveloped by: Cracko298\n\nWith help from:\n- wyndchyme\n- Zexlo\n- RaiRai6895\n- Darksiders (Kilix)\n- Pizzaleader";
 
         if (usaTID == titleID)
             menu = new PluginMenu(mgapckTxt + "USA", 1, 0, 0, abtPlg);
@@ -392,9 +392,10 @@ exit:
         } else {
             initializePaths();
             checkAndCreateDirectories();
+            displayMegapackVersion();
             OSD::Notify("MegaPack has successfully loaded.");
             OSD::Notify("Press Select to open menu.");
-	    OSD::Notify("IMPORTANT: Ensure Input Redirection is enabled in Rosalina.");
+	        OSD::Notify("IMPORTANT: Ensure Input Redirection is enabled in Rosalina Menu.");
             defaultCodes();
             svcSleepThread(500000000);
             

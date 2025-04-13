@@ -172,7 +172,7 @@ void defaultCodes(){
     if (!Process::IsPaused()){
     static int myInt = 1;
     if (myInt == 1){
-        OSD::Notify("Set Megapack default codes.");
+        OSD::Notify("Enable MegaPack default codes.");
         myInt++;
     }
     Process::WriteFloat(0x4EA090, 0.045);
@@ -203,7 +203,7 @@ void stopMobSpawns(MenuEntry *entry){
     if (!Process::IsPaused()){
     static int myInt = 1;
     if (myInt == 1){
-        OSD::Notify("Disabled Mob-Spawning.");
+        OSD::Notify("Disabled mob spawning.");
         myInt++;
     }
     Process::Write32(0xA33898, 0xB0);
@@ -221,7 +221,7 @@ void itemExpLimit(MenuEntry *entry){
     if (!Process::IsPaused()){
     static int myInt = 1;
     if (myInt == 1){
-        OSD::Notify("Removed ground item limit.");
+        OSD::Notify("Removed dropped item limit.");
         myInt++;
     }
     Process::Write32(0xA339C0, 0x00);
@@ -233,7 +233,7 @@ void enhancedParticles(MenuEntry *entry){
     if (!Process::IsPaused()){
     static int myInt = 1;
     if (myInt == 1){
-        OSD::Notify("Fixed Write32 Panic.");
+        OSD::Notify("Enabled Enhanced Particles.");
         myInt++;
     }
     Process::Write8(0x14A4F, 0xE2);
@@ -276,14 +276,14 @@ bool displayPlayerCoordsTopScreen(const Screen& screen){
     } else {
         erb = false;
     }
-	screen.Draw("Player.X: " + Utils::Format("%.2f", x), 10, 45, Color::White, Color::Black);
-    screen.Draw("Player.Y: " + Utils::Format("%.2f", y), 10, 55, Color::White, Color::Black);
-    screen.Draw("Player.Z: " + Utils::Format("%.2f", z), 10, 65, Color::White, Color::Black);
-    screen.Draw("3D Engine?: " + Utils::Format("%s", erb ? "true" : "false"), 10, 85, Color::White, Color::Black);
+	screen.Draw("PlayerX: " + Utils::Format("%.2f", x), 10, 45, Color::White, Color::Black);
+    screen.Draw("PlayerY: " + Utils::Format("%.2f", y), 10, 55, Color::White, Color::Black);
+    screen.Draw("PlayerZ: " + Utils::Format("%.2f", z), 10, 65, Color::White, Color::Black);
+    screen.Draw("3DEngine?: " + Utils::Format("%s", erb ? "true" : "false"), 10, 85, Color::White, Color::Black);
     screen.Draw("IsSwimming?: " + Utils::Format("%s", uwtr ? "true" : "false"), 10, 95, Color::White, Color::Black);
-    screen.Draw("EXP Rendered: " + Utils::Format("%u", exp), 10, 105, Color::White, Color::Black);
-    screen.Draw("Mobs Rendered: " + Utils::Format("%u", noe), 10, 115, Color::White, Color::Black);
-    screen.Draw("Items Rendered: " + Utils::Format("%u", itm), 10, 125, Color::White, Color::Black);
+    screen.Draw("ExpRendered: " + Utils::Format("%u", exp), 10, 105, Color::White, Color::Black);
+    screen.Draw("MobsRendered: " + Utils::Format("%u", noe), 10, 115, Color::White, Color::Black);
+    screen.Draw("ItemsRendered: " + Utils::Format("%u", itm), 10, 125, Color::White, Color::Black);
 	return true;
 }
 
@@ -292,7 +292,7 @@ void betterMinecartPhysics(MenuEntry *entry){
     if (!Process::IsPaused()){
     static int myInt = 1;
     if (myInt == 1){
-        OSD::Notify("Configured Better Minecart Physics.");
+        OSD::Notify("Enabled Better Minecart Physics.");
         myInt++;
     }
     Process::WriteFloat(0x659B48, 0.0);
@@ -405,12 +405,12 @@ void selectAndModifyOffset() {
     std::vector<std::string> properties = {"Pivot", "Origin", "Size", "UV"};
     std::vector<std::string> coordinates = {"X", "Y", "Z"};
 
-    Keyboard kb1("Select Body Part:");
+    Keyboard kb1("Select body part:");
     kb1.Populate(bodyParts);
     int bodyIndex = kb1.Open();
     if (bodyIndex < 0) return;
 
-    Keyboard kb2("Select Property:");
+    Keyboard kb2("Select property:");
     kb2.Populate(properties);
     int propIndex = kb2.Open();
     if (propIndex < 0) return; 
@@ -419,7 +419,7 @@ void selectAndModifyOffset() {
         coordinates = {"X", "Y"};
     }
 
-    Keyboard kb3("Select Coordinate:");
+    Keyboard kb3("Select coordinate:");
     kb3.Populate(coordinates);
     int coordIndex = kb3.Open();
     if (coordIndex < 0) return; 
@@ -439,7 +439,7 @@ void selectAndModifyOffset() {
         file.Seek(offset, File::SET);
         OSD::Notify("Selected: " + key + " | Offset: 0x" + Utils::Format("%X", offset));
 
-        Keyboard kb4("Enter New Value:");
+        Keyboard kb4("Enter new value:");
         kb4.IsHexadecimal(false);
         if (kb4.Open(value) != -1) {
             file.Write(&value, sizeof(value));
@@ -447,7 +447,7 @@ void selectAndModifyOffset() {
         }
         file.Close();
     } else {
-        OSD::Notify("Invalid Selection!");
+        OSD::Notify("Invalid selection!");
     }
 }
 
@@ -461,7 +461,7 @@ void backupWorld(){
     while (true){
         u32 getBaseAddress = Utils::Search(startAddress, size, valToSearch);
         if (getBaseAddress != 0x00){
-            OSD::Notify(Utils::Format("Found Save Address at: 0x%X", getBaseAddress));
+            OSD::Notify(Utils::Format("Found save address at: 0x%X", getBaseAddress));
             File::Create(megapackWorldDir + Utils::Format("/slt%u.cdb", i));
 
             if (File::Open(file, megapackWorldDir + Utils::Format("/slt%u.cdb", i), File::WRITE) != 0){
@@ -504,8 +504,8 @@ void dumpExecutable() {
     File::Create(megapackCodeDir + "/code_full.bin");
     if (File::Open(file, megapackCodeDir + "/code_full.bin", File::WRITE) == 0){
         file.Dump(baseAddress, totalSize);
-        MessageBox("Notice", "Dumped Executable to:\n" + megapackCodeDir, DialogType::DialogOk, ClearScreen::Both)();
-        OSD::Notify("Dumped Executable to: " + megapackCodeDir);
+        MessageBox("Notice", "Dumped executable to:\n" + megapackCodeDir, DialogType::DialogOk, ClearScreen::Both)();
+        OSD::Notify("Dumped executable to: " + megapackCodeDir);
     }
     file.Close();
 }
@@ -517,8 +517,8 @@ void dumpStriptExecutable() { // gets rid of variable data stored inside of mc3d
     File::Create(megapackCodeDir + "/code_stripped.bin");
     if (File::Open(file, megapackCodeDir + "/code_stripped.bin", File::WRITE) == 0){
         file.Dump(baseAddress, totalSize);
-        MessageBox("Notice", "Dumped Stripped Executable to:\n" + megapackCodeDir, DialogType::DialogOk, ClearScreen::Both)();
-        OSD::Notify("Dumped Stripped Executable to: " + megapackCodeDir);
+        MessageBox("Notice", "Dumped stripped executable to:\n" + megapackCodeDir, DialogType::DialogOk, ClearScreen::Both)();
+        OSD::Notify("Dumped stripped executable to: " + megapackCodeDir);
     }
     file.Close();
 }
@@ -541,14 +541,14 @@ void mobController() { // Thanks to Darksiders for Base AR Cheats and allowing u
         0x33, 0x35, 0x36, 0x38, 0x39, 0x44, 0x45, 0x46, // Shulker, Rabbit, Witch, Llama, Camera, Husk, Stray, Skeleton (0x15 as well)
         0x49, 0x4A, 0x4C, 0x4D, 0x0D, 0x14 // Endermite, Evoker, Vex, Vindicator, Polar Bear, Blaze
     };
-    Keyboard kb1("Select a Mob/Entity to possess:");
+    Keyboard kb1("Select a mob/entity to possess:");
     kb1.Populate(mobSelector);
     int mobIndex = kb1.Open();
     if (mobIndex < 0) return;
     ourVal = mobValues[mobIndex];
     Process::Read32(0xFFFDF74, baseAddress);
     Process::Write32(baseAddress+0x278, ourVal);
-    OSD::Notify("Change Player into: " + mobSelector[mobIndex]);
+    OSD::Notify("Change player into: " + mobSelector[mobIndex]);
 }
 
 void sha256_hash(const uint8_t *data, size_t length, uint8_t *hash) {

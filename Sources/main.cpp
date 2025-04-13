@@ -106,7 +106,7 @@ exit:
 
     if (content.find("enable_game_patching = 1") != std::string::npos)
     {
-        OSD::Notify("Game Patching is Already Enabled.");
+        OSD::Notify("Game patching is already enabled.");
         return;
     }
 
@@ -144,14 +144,14 @@ exit:
     {
         menu += new MenuEntry("CTRPF C-Stick Fix", getCstickMovement);
         MenuFolder *codesFolder = new MenuFolder("Default Codes");
-        MenuFolder *miscFolder = new MenuFolder("Misc Codes");
+        MenuFolder *miscFolder = new MenuFolder("Misc. Codes");
         MenuFolder *funFolder = new MenuFolder("Fun Codes");
         MenuFolder *configFolder = new MenuFolder("Config");
         MenuFolder *toolsFolder = new MenuFolder("Tools");
         // codesFolder->Append(new MenuEntry("Drop Everything In-Hand", dropEverything));
-        codesFolder->Append(new MenuEntry("Disable Ground Item/EXP Limit", itemExpLimit));
-        codesFolder->Append(new MenuEntry("Remove Mob Spawn-Cap", removeMobCap));
-        codesFolder->Append(new MenuEntry("Disable Mob-Spawning", stopMobSpawns));
+        codesFolder->Append(new MenuEntry("Disable Dropped Item/EXP Limit", itemExpLimit));
+        codesFolder->Append(new MenuEntry("Remove Mob Spawn Cap", removeMobCap));
+        codesFolder->Append(new MenuEntry("Disable Mob Spawning", stopMobSpawns));
         codesFolder->Append(new MenuEntry("Enhanced Particles", enhancedParticles));
         codesFolder->Append(new MenuEntry("Set FOV to 90", ninetyFov));
         funFolder->Append(new MenuEntry("Better Minecart Physics", betterMinecartPhysics));
@@ -163,10 +163,10 @@ exit:
         miscFolder->Append(new MenuEntry("Dynamic Thick Fog Weather", thickFogWeather));
         toolsFolder->Append(new MenuEntry("Player Model Editor", nullptr, [](MenuEntry *entry)
         {
-            if (MessageBox("Are you sure?", "The Model Editor will permanately change your skin attributes.\nThis requires the game to be restarted for changes to take effect.", DialogType::DialogOkCancel, ClearScreen::Both)()){
+            if (MessageBox("Are you sure?", "The model editor will permanently change your skin attributes.\nThis requires the game to be restarted for changes to take effect.", DialogType::DialogOkCancel, ClearScreen::Both)()){
                 selectAndModifyOffset();
             } else{
-                OSD::Notify("Operation Cancled.");
+                OSD::Notify("Operation cancelled.");
             }
             
         }));
@@ -178,7 +178,7 @@ exit:
         {
             float userValue;
 
-            Keyboard kb("Enter a Float Value (Recomended 0->10):");
+            Keyboard kb("Enter a float value (Recommended 0-10):");
             float input;
 
             if (kb.Open(input) != -1)
@@ -195,15 +195,15 @@ exit:
                 Process::WriteFloat(0x988BB8, userValue);
 
                 OSD::Notify(Utils::Format("Written: %.2f to Scaling Address'", userValue));
-                OSD::Notify("Requires a world restart, or for you to load a World.");
+                OSD::Notify("Requires a world restart, or for you to load a world.");
                 OSD::Notify("This does NOT scale the player skin.");
         }
         }));
-        funFolder->Append(new MenuEntry("Change Player Arm-Length", nullptr, [](MenuEntry *entry)
+        funFolder->Append(new MenuEntry("Change Player Arm Length", nullptr, [](MenuEntry *entry)
         {
             float userValue;
 
-            Keyboard kb("Enter a Float Value (Recomended 5->15):");
+            Keyboard kb("Enter a float value (Recommended 5-15):");
             float input;
 
             if (kb.Open(input) != -1)
@@ -219,7 +219,7 @@ exit:
         {
             float userValue;
 
-            Keyboard kb("Enter a Float Value (Recomended 0->1):");
+            Keyboard kb("Enter a float value (Recommended 0-1):");
             float input;
 
             if (kb.Open(input) != -1)
@@ -233,7 +233,7 @@ exit:
         }));
         funFolder->Append(new MenuEntry("Turn Player Upside-Down", nullptr, [](MenuEntry *entry)
         {
-            Keyboard kb("Enter your System-Nickname (Not NNID/PID):");
+            Keyboard kb("Enter your system nickname (Not NNID/PID):");
             std::string input;
 
             if (kb.Open(input) != -1)
@@ -245,16 +245,16 @@ exit:
 
                 Process::WriteString(0x6A6D50, input, StringFormat::Utf8);
             
-                OSD::Notify("Cracked Name-Function to Accept: " + input);
+                OSD::Notify("Cracked name function to accept " + input);
             }
 
         }));
         // configs
-        configFolder->Append(new MenuEntry("Change ViewBobbing Sensitivity", nullptr, [](MenuEntry *entry)
+        configFolder->Append(new MenuEntry("Change View Bobbing Sensitivity", nullptr, [](MenuEntry *entry)
         {
             float userValue;
 
-            Keyboard kb("Enter a float Value (Recomended 0->30):");
+            Keyboard kb("Enter a float value (Recommended 0-30):");
             float input;
 
             if (kb.Open(input) != -1)
@@ -277,7 +277,7 @@ exit:
         {
             float userValue;
 
-            Keyboard kb("Enter a float value (Recomended 0->5):");
+            Keyboard kb("Enter a float value (Recommended 0-5):");
             float input;
 
             if (kb.Open(input) != -1)
@@ -289,11 +289,11 @@ exit:
                 OSD::Notify(Utils::Format("Written: %.2f to 0x10B4D4", userValue));
         }
         }));
-        configFolder->Append(new MenuEntry("Change Cloud Heightmap", nullptr, [](MenuEntry *entry)
+        configFolder->Append(new MenuEntry("Change Cloud Height", nullptr, [](MenuEntry *entry)
         {
             float userValue;
 
-            Keyboard kb("Enter a Float Value (Recomended (-80)->2):");
+            Keyboard kb("Enter a float value (Recommended (-80)-2):");
             float input;
 
             if (kb.Open(input) != -1)
@@ -313,9 +313,9 @@ exit:
         //    keys |= Key::CStickDown;
         //}));
         configFolder->Append(new MenuEntry("Change FOV", nullptr, [](MenuEntry *entry)
-        {
+        { // wyndchyme was here. This FOV setting doesn't seem to apply to everything (the wider FOV seems to only distort the held item appearance.) Hi Cracko!
             float userValue;
-            Keyboard kb("Enter a float value (Recomended 50->130):");
+            Keyboard kb("Enter a float value (Recommended 50-130):");
             float input;
 
             if (kb.Open(input) != -1)
@@ -329,10 +329,10 @@ exit:
         }));
         toolsFolder->Append(new MenuEntry("World Extractor", nullptr, [](MenuEntry *entry)
         {
-            if (MessageBox("WARNING - Are you sure?", "World Extractor will extract your currently running world if you're in one. The plugin will freeze, and can take up a-lot of SDMC Space (5MiB->50MiB), please wait (45s->60s) for the plugin to finish. Once started, you cannot cancel the operation.\n\nNote: These worlds once extracted will need to have the headers rebuilt.", DialogType::DialogOkCancel, ClearScreen::Both)()){
+            if (MessageBox("WARNING - Are you sure?", "The world extractor will extract your currently running world if you're in one. The plugin will freeze, and this can take up a lot of SDMC Space (5MiB-50MiB), please wait (45s-60s) for extraction to complete. Once started, you cannot cancel the operation.\n\nNote: These worlds once extracted will need to have the headers rebuilt.", DialogType::DialogOkCancel, ClearScreen::Both)()){
                 backupWorld();
             } else{
-                OSD::Notify("Operation Cancled.");
+                OSD::Notify("Operation cancelled.");
             }
         }));
         toolsFolder->Append(new MenuEntry("Dump Executable", nullptr, [](MenuEntry *entry)
@@ -340,15 +340,15 @@ exit:
             if (MessageBox("Notice", "Dumping the executable could take some time. Continue?", DialogType::DialogOkCancel, ClearScreen::Both)()){
                 dumpExecutable();
             } else{
-                OSD::Notify("Operation Cancled.");
+                OSD::Notify("Operation cancelled.");
             }
         }));
         toolsFolder->Append(new MenuEntry("Dump Stripped Executable", nullptr, [](MenuEntry *entry)
         {
-            if (MessageBox("Notice", "Dumping the stripped executable Could take some time. Continue?", DialogType::DialogOkCancel, ClearScreen::Both)()){
+            if (MessageBox("Notice", "Dumping the stripped executable could take some time. Continue?", DialogType::DialogOkCancel, ClearScreen::Both)()){
                 dumpStriptExecutable();
             } else{
-                OSD::Notify("Operation Cancelled.");
+                OSD::Notify("Operation cancelled.");
             }
         }));
         
@@ -367,7 +367,7 @@ exit:
         u64 jpnTID = 1125899908414720;
         PluginMenu *menu = nullptr;
         std::string mgapckTxt = "MegaPack Plugin - ";
-        std::string abtPlg = "A CTRPF Plugin meant for working with Minecraft 3DS' Modernization MegaPack (Modpack).\nDeveloped by: Cracko298\n\nWith help from:\n- wyndchyme (dale)\n- Zexlo\n- RaiRai6895\n- Darksiders (Kilix)";
+        std::string abtPlg = "A CTRPF Plugin meant for working with Modernization MegaPack.\nDeveloped by: Cracko298\n\nWith help from:\n- wyndchyme\n- Zexlo\n- RaiRai6895\n- Darksiders (Kilix)";
 
         if (usaTID == titleID)
             menu = new PluginMenu(mgapckTxt + "USA", 1, 0, 0, abtPlg);
@@ -392,8 +392,8 @@ exit:
         } else {
             initializePaths();
             checkAndCreateDirectories();
-            OSD::Notify("MegaPack has Successfully Loaded.");
-            OSD::Notify("Press 'select' to open menu.");
+            OSD::Notify("MegaPack has successfully loaded.");
+            OSD::Notify("Press Select to open menu.");
             defaultCodes();
             svcSleepThread(500000000);
             

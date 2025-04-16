@@ -713,39 +713,73 @@ void displayMegapackVersion() {
     file.Close();
     Process::WriteString(0x340E883C, buffer);
 }
+void changeSkinToCustom() {
+    static u32 address = 0;
+    static std::vector<u8> valToSearch;
 
-//void changeSkinToCustom() {
-  //  static u32 address;
-  //  std::string skinsDir = megapackSkinsDir;
-  //  OSD::Notify(skinsDir);
-  //  std::vector<u64> buffer(0x4000);
-  //  std::vector<std::string> skinFiles;
-  //  Directory dir;
-  //  Directory::Open(dir, skinsDir);
-  //  dir.ListFiles(skinFiles);
-  //  Keyboard kb1("Select a Skin:"); 
-  //  kb1.Populate(skinFiles);
-  //  int skinIndex = kb1.Open();
-  //  if (skinIndex < 0) return;
-  //  std::string skinName = skinFiles[skinIndex];
-  //  std::string selectedSkin = skinsDir + "/" + skinName;
+    std::string skinsDir = megapackSkinsDir;
+    OSD::Notify(skinsDir);
 
-  //  if (address == NULL)
+    std::vector<std::string> skinFiles;
+    Directory dir;
+    Directory::Open(dir, skinsDir);
+    dir.ListFiles(skinFiles);
 
+    Keyboard kb1("Select a Skin:");
+    kb1.Populate(skinFiles);
+    int skinIndex = kb1.Open();
+    if (skinIndex < 0) return;
 
-  //  u32 address = 0x30910000;
-  //  File file;
-  //  if (File::Open(file, selectedSkin, File::READ) == 0){
-  //  file.Seek(0x20);
-  //  file.Read(buffer.data(), 0x4000);
-  //  
-  //  for (size_t i = 0; i < 0x4000; i += 8) {
-  //  u64 value = 0;
-  //  std::memcpy(&value, &buffer[i], 8); // Copy 8 bytes from buffer into value
-  //  Process::Write64(address + i, value);        // Write 64-bit value to memory
-  //  }
-  //  //    }
-  //  file.Close();
-  //  }
+    std::string skinName = skinFiles[skinIndex];
+    std::string selectedSkin = skinsDir + "/" + skinName;
+
+    // If no address or search pattern exists, search memory for known pattern
+    if (address == 0 || valToSearch.empty()) {
+        std::vector<u8> initialPattern {
+            0xFF, 0x37, 0x37, 0x37, 0xFF, 0x37, 0x37, 0x37,
+            0xFF, 0x37, 0x37, 0x37, 0xFF, 0x3F, 0x3F, 0x3F,
+            0xFF, 0x37, 0x37, 0x37, 0xFF, 0x3F, 0x3F, 0x3F,
+            0xFF, 0x4A, 0x4A, 0x4A
+        };
+
+        u32 startAddress = 0x30800000;
+        u32 endAddress = 0x31000000;
+        u32 size = endAddress - startAddress;
+        u32 found = Utils::Search(startAddress, size, initialPattern);
+        if (found == 0) {
+            OSD::Notify("Initial skin pattern not found!");
+            return;
+        }
+
+        address = found - 0x200;
+        OSD::Notify(Utils::Format("Found Skin At: 0x%X", address));
+    }
+
+    // Open and write the selected skin file
+    File file;
+    if (File::Open(file, selectedSkin, File::READ) == 0) {
+        file.Seek(0x20);
+        std::vector<u8> rawBuffer(0x4000);
+        file.Read(rawBuffer.data(), rawBuffer.size());
+
+        // Write the skin data to memory
+        for (size_t i = 0; i < rawBuffer.size(); i += 4) {
+            u32 value = 0;
+            std::memcpy(&value, &rawBuffer[i], 4);
+            Process::Write32(address + i, value);
+        }
+
+        // After writing, read 0x20 bytes from file @ offset 0x220
+        file.Seek(0x220);  // 0x200 + 0x20
+        valToSearch.resize(0x20);
+        file.Read(valToSearch.data(), 0x20);
+
+        OSD::Notify("Skin applied successfully.");
+        file.Close();
+    } else {
+        OSD::Notify("Failed to open skin file!");
+    }
+}
+
 
 }

@@ -170,14 +170,14 @@ exit:
             }
             
         }));
-        //toolsFolder->Append(new MenuEntry("Load Skin from SDMC", nullptr, [](MenuEntry *entry)
-        //{
-        //    if (MessageBox("Are you sure?", "Loading the Skin will a small amount of time. Please be patient as the menu cannot be exited until complete.\nOnce this operation is completed it will affect the 'Steve' skin, and is temporary.", DialogType::DialogOkCancel, ClearScreen::Both)()){
-        //        changeSkinToCustom();
-        //    } else{
-        //        OSD::Notify("Operation cancelled.");
-        //    }   
-        //}));
+        toolsFolder->Append(new MenuEntry("Load Skin from SDMC", nullptr, [](MenuEntry *entry)
+        {
+            if (MessageBox("Are you sure?", "Loading the Skin will a small amount of time. Please be patient as the menu cannot be exited until complete.\nOnce this operation is completed it will affect the 'Steve' skin, and is temporary.", DialogType::DialogOkCancel, ClearScreen::Both)()){
+                changeSkinToCustom();
+            } else{
+                OSD::Notify("Operation cancelled.");
+            }   
+        }));
         funFolder->Append(new MenuEntry("Control Mobs (Models)", nullptr, [](MenuEntry *entry)
         {
             mobController();

@@ -161,6 +161,8 @@ exit:
         //funFolder->Append(new MenuEntry("Creative Mode", creativeMode));
         miscFolder->Append(new MenuEntry("Dynamic Clouds", dynaClouds));
         miscFolder->Append(new MenuEntry("Dynamic Thick Fog Weather", thickFogWeather));
+        miscFolder->Append(new MenuEntry("Player Head Animation", animateSkinHead));
+        
         toolsFolder->Append(new MenuEntry("Player Model Editor", nullptr, [](MenuEntry *entry)
         {
             if (MessageBox("Are you sure?", "The model editor will permanently change your skin attributes.\nThis requires the game to be restarted for changes to take effect.", DialogType::DialogOkCancel, ClearScreen::Both)()){

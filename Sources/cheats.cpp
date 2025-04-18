@@ -120,6 +120,7 @@ namespace CTRPluginFramework
     std::string megapackWorldDir;
     std::string megapackCodeDir;
     std::string megapackSkinsDir;
+    std::string megapackAnimationsHeadDir;
 
     void initializePaths() {
         processId = Process::GetTitleID();
@@ -134,11 +135,17 @@ namespace CTRPluginFramework
         megapackWorldDir = "sdmc:/megapackPlugin/worldBackups";
         megapackCodeDir = "sdmc:/megapackPlugin/codeBackups";
         megapackSkinsDir = "sdmc:/megapackPlugin/Skins";
+        megapackAnimationsHeadDir = "sdmc:/megapackPlugin/Animations/Helmet";
         if (Directory::IsExists(megapackDir) == 0){
             Directory::Create(megapackDir);
             Directory::Create(megapackWorldDir);
             Directory::Create(megapackCodeDir);
             Directory::Create(megapackSkinsDir);
+            Directory::Create(megapackAnimationsHeadDir);
+        }
+        if (Directory::IsExists(megapackSkinsDir) == 0 || Directory::IsExists(megapackAnimationsHeadDir) == 0){
+            Directory::Create(megapackSkinsDir);
+            Directory::Create(megapackAnimationsHeadDir);
         }
     }
 
@@ -175,7 +182,7 @@ void ninetyFov(MenuEntry *entry){
 
 void defaultCodes(){
     if (!Process::IsPaused()){
-    Process::WriteFloat(0x4EA090, 0.045);
+    Process::WriteFloat(0x4EA090, 0.035);
     Process::WriteFloat(0x3CF2A0, 10.0);
     Process::WriteFloat(0x4E61D0, 2.5);
 }
@@ -672,6 +679,31 @@ void thickFogWeather(MenuEntry *entry) {
     }
 }
 
+u32 getSkinAddress() {
+    static u32 address = 0;
+    if (address == 0) {
+        std::vector<u8> initialPattern {
+            0xFF, 0x37, 0x37, 0x37, 0xFF, 0x37, 0x37, 0x37,
+            0xFF, 0x37, 0x37, 0x37, 0xFF, 0x3F, 0x3F, 0x3F,
+            0xFF, 0x37, 0x37, 0x37, 0xFF, 0x3F, 0x3F, 0x3F,
+            0xFF, 0x4A, 0x4A, 0x4A
+        };
+    
+        u32 startAddress = 0x30800000;
+        u32 endAddress = 0x31000000;
+        u32 size = endAddress - startAddress;
+        u32 found = Utils::Search(startAddress, size, initialPattern);
+        if (found == 0) {
+            OSD::Notify("Initial skin pattern not found!");
+            return address;
+        }
+    
+        address = found - 0x200;
+    }
+    return address;
+}
+
+
 void getCstickMovement(MenuEntry *entry) {
     circlePosition cstick;
     hidScanInput();
@@ -713,6 +745,7 @@ void displayMegapackVersion() {
     file.Close();
     Process::WriteString(0x340E883C, buffer);
 }
+
 void changeSkinToCustom() {
     static u32 address = 0;
     static std::vector<u8> valToSearch;
@@ -735,24 +768,7 @@ void changeSkinToCustom() {
 
     // If no address or search pattern exists, search memory for known pattern
     if (address == 0 || valToSearch.empty()) {
-        std::vector<u8> initialPattern {
-            0xFF, 0x37, 0x37, 0x37, 0xFF, 0x37, 0x37, 0x37,
-            0xFF, 0x37, 0x37, 0x37, 0xFF, 0x3F, 0x3F, 0x3F,
-            0xFF, 0x37, 0x37, 0x37, 0xFF, 0x3F, 0x3F, 0x3F,
-            0xFF, 0x4A, 0x4A, 0x4A
-        };
-
-        u32 startAddress = 0x30800000;
-        u32 endAddress = 0x31000000;
-        u32 size = endAddress - startAddress;
-        u32 found = Utils::Search(startAddress, size, initialPattern);
-        if (found == 0) {
-            OSD::Notify("Initial skin pattern not found!");
-            return;
-        }
-
-        address = found - 0x200;
-        OSD::Notify(Utils::Format("Found Skin At: 0x%X", address));
+        address = getSkinAddress();
     }
 
     // Open and write the selected skin file
@@ -779,6 +795,96 @@ void changeSkinToCustom() {
     } else {
         OSD::Notify("Failed to open skin file!");
     }
+    file.Close();
+}
+
+void animateBaseSkinHead() {
+    static u32 address = 0;
+    static std::vector<u8> valToSearch;
+    std::string animationsDir = megapackAnimationsHeadDir;
+    //OSD::Notify(animationsDir);
+
+    //std::vector<std::string> animationFiles;
+    //Directory dir;
+    //Directory::Open(dir, animationsDir);
+    //dir.ListFiles(animationFiles);
+
+    //Keyboard kb1("Select an Animation:");
+    //kb1.Populate(animationFiles);
+    //int skinIndex = kb1.Open();
+    //if (skinIndex < 0) return;
+
+    //std::string animationName = animationFiles[skinIndex];
+    //std::string selectedAnimation = animationsDir + "/" + animationName;
+
+
+    std::string selectedAnimation = animationsDir + "/fireHeadAnimation.3dst";
+    // If no address or search pattern exists, search memory for known pattern
+    if (address == 0 || valToSearch.empty()) {
+        address = getSkinAddress();
+    }
+
+    File file;
+    if (File::Open(file, selectedAnimation, File::READ) == 0) {
+        file.Seek(0x20);
+        std::vector<u8> animBuff0(0x100);
+        file.Read(animBuff0.data(), animBuff0.size());
+
+    }
+}
+
+
+void animateSkinHead(MenuEntry *entry) {
+    static u32 address = 0;
+    static std::vector<u8> valToSearch;
+
+    std::string selectedAnimation = megapackAnimationsHeadDir + "/default.3dst";
+    File configFile;
+    std::vector<u8> myConfigBuffer(0x25);
+    if (File::Open(configFile, megapackAnimationsHeadDir + "/config.txt", File::READ) == 0) {
+        configFile.Seek(0xA9);
+        configFile.Read(myConfigBuffer.data(), myConfigBuffer.size());
+    }
+    configFile.Close();
+
+    // Get base address once
+    if (address == 0 || valToSearch.empty()) {
+        address = getSkinAddress();
+    }
+
+    File file;
+    if (File::Open(file, selectedAnimation, File::READ) == 0) {
+        file.Seek(0x20);
+
+        std::vector<u8> buffer(0x100);
+        std::vector<u32> offsetPattern = {0x0400, 0x0500, 0x0600, 0x0700, 0x0D00, 0x0E00}; // Right, Front, Left, Back, Top, Bottom
+
+        size_t patternIndex = 0;
+        for (int i = 0; i < 32; ++i) {
+            file.Seek(0x20 + i * 0x100, File::SET);
+            if (file.Read(buffer.data(), buffer.size()) == buffer.size()) {
+                break;
+            }
+
+            u32 newVar = address + 0x3000 + offsetPattern[patternIndex];
+
+            // Write 0x100 bytes to newVar
+            for (size_t j = 0; j < buffer.size(); j += 4) {
+                u32 val = 0;
+                std::memcpy(&val, &buffer[j], 4);
+                Process::Write32(newVar + j, val);
+            }
+
+            patternIndex = (patternIndex + 1) % offsetPattern.size();
+        }
+
+        file.Close();
+    }
+}
+
+
+void blinkingTest() {
+
 }
 
 

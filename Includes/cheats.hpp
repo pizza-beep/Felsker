@@ -36,6 +36,7 @@ namespace CTRPluginFramework
     void getCstickMovement(MenuEntry *entry);
     void displayMegapackVersion();
     void changeSkinToCustom();
+    void animateSkinHead(MenuEntry *entry);
     std::vector<std::string> list3dstFiles(const std::string& path);
     class Player;
     bool IsSwimming();

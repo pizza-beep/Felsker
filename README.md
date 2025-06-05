@@ -43,3 +43,10 @@
 ![2025-11-20_23-59-58 222_top](https://github.com/user-attachments/assets/04743399-847d-47db-a87d-637f59498f64)
 ![2025-11-22_02-23-43 684_top](https://github.com/user-attachments/assets/978e9386-23c5-4911-ab65-478e838c400e)
 ![2025-11-22_02-23-22 872_top](https://github.com/user-attachments/assets/f0f49501-5349-49a2-80fe-78df7e97c5f0)
+
+## Credits:
+Cracko298 - for the original megapack plugin
+
+RaiRai6895 - for the minecraft class
+
+

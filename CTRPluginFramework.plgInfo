@@ -1,4 +1,4 @@
-Author: Cracko298
+Author: Pizzaleader
 
 Version: # Plugin version
     Major: 1
@@ -7,12 +7,13 @@ Version: # Plugin version
 
 Targets: 0x00001B87, 0x000017CA, 0x000017FD
 
-Title: Megapack Plugin
+Title: Felsker
 
-Summary: A CTRPF Plugin meant for Working with the Minecraft 3DS Megapack (Modpack).
+Summary: A CTRPF Plugin with a lot of tools.
 
 Description: |
-  Codes for Minecraft 3DS' Modpack; Modernization Megapack.
+  A Minecraft New 3ds plugin with a lot of tools
+  A fork of the megapack plugin, originally created by Cracko298 for the Modernization Megapack.
 
   Features:
     - Memory searcher
@@ -21,6 +22,7 @@ Description: |
     - Code import from file
     - Action Replay engine with extra capabilities
     - Super fast screenshot engine
+    - Tools to assist mod devs and users
 
 Compatibility: Any
 

@@ -17,7 +17,7 @@ namespace CTRPluginFramework
     Handle  processHandle;
     u64 titleID = Process::GetTitleID();
 
-    // This patch the NFC disabling the touchscreen when scanning an amiibo, which prevents ctrpf to be used
+    // This patches the NFC disabling the touchscreen when scanning an amiibo, which prevents ctrpf to be used
     static void    ToggleTouchscreenForceOn(void)
     {
         static u32 original = 0;
@@ -66,7 +66,7 @@ exit:
     // This function is called before main and before the game starts
     // Useful to do code edits safely
     void PatchProcess(FwkSettings &settings){
-
+    	settings.UseGameHidMemory = true;
     #if defined(__ARM_ARCH_7A__) // Check for ARMv7-A architecture
         asm volatile (
             "mrc p15, 0, r0, c1, c0, 2 \n"  // Read CPACR
@@ -403,9 +403,8 @@ exit:
             initializePaths();
             checkAndCreateDirectories();
             displayMegapackVersion();
-            OSD::Notify("MegaPack has successfully loaded.");
+            OSD::Notify("Felsker has successfully loaded.");
             OSD::Notify("Press Select to open menu.");
-	        OSD::Notify("IMPORTANT: Ensure Input Redirection is enabled in Rosalina Menu.");
             defaultCodes();
             svcSleepThread(500000000);
             

@@ -9,10 +9,10 @@ Targets: 0x00001B87, 0x000017CA, 0x000017FD
 
 Title: Felsker
 
-Summary: A CTRPF Plugin with a lot of tools.
+Summary: A CTRPF Plugin for Minecraft 3ds with gameplay improvements and tools.
 
 Description: |
-  A Minecraft New 3ds plugin with a lot of tools
+  A Minecraft New 3ds plugin with a lot of tools and gameplay improvments
   A fork of the megapack plugin, originally created by Cracko298 for the Modernization Megapack.
 
   Features:

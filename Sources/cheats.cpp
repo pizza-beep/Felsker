@@ -116,11 +116,11 @@ namespace CTRPluginFramework
     u64 processId;
     std::string filename;
     std::string modsPath;
-    std::string megapackDir;
-    std::string megapackWorldDir;
-    std::string megapackCodeDir;
-    std::string megapackSkinsDir;
-    std::string megapackAnimationsHeadDir;
+    std::string FelskerDir;
+    std::string FelskerWorldDir;
+    std::string FelskerCodeDir;
+    std::string FelskerSkinsDir;
+    std::string FelskerAnimationsHeadDir;
 
     void initializePaths() {
         processId = Process::GetTitleID();
@@ -131,21 +131,21 @@ namespace CTRPluginFramework
     }
 
     void checkAndCreateDirectories() {
-        megapackDir = "sdmc:/megapackPlugin";
-        megapackWorldDir = "sdmc:/megapackPlugin/worldBackups";
-        megapackCodeDir = "sdmc:/megapackPlugin/codeBackups";
-        megapackSkinsDir = "sdmc:/megapackPlugin/Skins";
-        megapackAnimationsHeadDir = "sdmc:/megapackPlugin/Animations/Helmet";
-        if (Directory::IsExists(megapackDir) == 0){
-            Directory::Create(megapackDir);
-            Directory::Create(megapackWorldDir);
-            Directory::Create(megapackCodeDir);
-            Directory::Create(megapackSkinsDir);
-            Directory::Create(megapackAnimationsHeadDir);
+        FelskerDir = "sdmc:/Minecraft 3ds/Felsker";
+        FelskerWorldDir = "sdmc:/Minecraft 3ds/Felsker/worldBackups";
+        FelskerCodeDir = "sdmc:/Minecraft 3ds/Felsker/codeBackups";
+        FelskerSkinsDir = "sdmc:/Minecraft 3ds/Felsker/Skins";
+        FelskerAnimationsHeadDir = "sdmc:/Minecraft 3ds/Felsker/Animations/Helmet";
+        if (Directory::IsExists(FelskerDir) == 0){
+            Directory::Create(FelskerDir);
+            Directory::Create(FelskerWorldDir);
+            Directory::Create(FelskerCodeDir);
+            Directory::Create(FelskerSkinsDir);
+            Directory::Create(FelskerAnimationsHeadDir);
         }
-        if (Directory::IsExists(megapackSkinsDir) == 0 || Directory::IsExists(megapackAnimationsHeadDir) == 0){
-            Directory::Create(megapackSkinsDir);
-            Directory::Create(megapackAnimationsHeadDir);
+        if (Directory::IsExists(FelskerSkinsDir) == 0 || Directory::IsExists(FelskerAnimationsHeadDir) == 0){
+            Directory::Create(FelskerSkinsDir);
+            Directory::Create(FelskerAnimationsHeadDir);
         }
     }
 
@@ -172,7 +172,7 @@ void ninetyFov(MenuEntry *entry){
     if (!Process::IsPaused()){
     static int myInt = 1;
     if (myInt == 1){
-        OSD::Notify("Set FOV to 90.");
+        OSD::Notify("Set item FOV to 90.");
         myInt++;
     }
     float fovVal = 90;
@@ -246,7 +246,26 @@ void enhancedParticles(MenuEntry *entry){
     Process::Write8(0x14A4F, 0xE2);
 }
 }
-
+void seedchanger(MenuEntry *entry) {
+    u32 seed;
+    u32 b1;
+    Process::Read32(0x0FFFE0A0, b1);
+    if (b1 != 0) {
+        Process::Read32(b1 + 0xC0, seed);
+    } else {
+        seed = 0;
+    }
+    Keyboard T("Enter a seed\n[Current value] : " + std::to_string(seed));
+    T.IsHexadecimal(false);
+    if (T.Open(seed) != -1) { // Only write if user pressed OK
+        if (b1 != 0) {
+            Process::Write32(b1 + 0xC0, seed);
+            OSD::Notify("Seed updated.");
+        } else {
+            OSD::Notify("Seed address not found.");
+        }
+    }
+}
 bool displayPlayerCoordsTopScreen(const Screen& screen){
 	if (!screen.IsTop) return false;
     static bool erb, uwtr;
@@ -469,9 +488,9 @@ void backupWorld(){
         u32 getBaseAddress = Utils::Search(startAddress, size, valToSearch);
         if (getBaseAddress != 0x00){
             OSD::Notify(Utils::Format("Found save address at: 0x%X", getBaseAddress));
-            File::Create(megapackWorldDir + Utils::Format("/slt%u.cdb", i));
+            File::Create(FelskerWorldDir + Utils::Format("/slt%u.cdb", i));
 
-            if (File::Open(file, megapackWorldDir + Utils::Format("/slt%u.cdb", i), File::WRITE) != 0){
+            if (File::Open(file, FelskerWorldDir + Utils::Format("/slt%u.cdb", i), File::WRITE) != 0){
                 OSD::Notify("Failed to open the CDB Slot file!");
                 return;
             } else{
@@ -508,11 +527,11 @@ void dumpExecutable() {
     u32 baseAddress = 0x100000;
     u32 totalSize = 0x93A000;
     File file;
-    File::Create(megapackCodeDir + "/code_full.bin");
-    if (File::Open(file, megapackCodeDir + "/code_full.bin", File::WRITE) == 0){
+    File::Create(FelskerCodeDir + "/code_full.bin");
+    if (File::Open(file, FelskerCodeDir + "/code_full.bin", File::WRITE) == 0){
         file.Dump(baseAddress, totalSize);
-        MessageBox("Notice", "Dumped executable to:\n" + megapackCodeDir, DialogType::DialogOk, ClearScreen::Both)();
-        OSD::Notify("Dumped executable to: " + megapackCodeDir);
+        MessageBox("Notice", "Dumped executable to:\n" + FelskerCodeDir, DialogType::DialogOk, ClearScreen::Both)();
+        OSD::Notify("Dumped executable to: " + FelskerCodeDir);
     }
     file.Close();
 }
@@ -521,11 +540,11 @@ void dumpStriptExecutable() { // gets rid of variable data stored inside of mc3d
     u32 baseAddress = 0x100000;
     u32 totalSize = 0x73A000;
     File file;
-    File::Create(megapackCodeDir + "/code_stripped.bin");
-    if (File::Open(file, megapackCodeDir + "/code_stripped.bin", File::WRITE) == 0){
+    File::Create(FelskerCodeDir + "/code_stripped.bin");
+    if (File::Open(file, FelskerCodeDir + "/code_stripped.bin", File::WRITE) == 0){
         file.Dump(baseAddress, totalSize);
-        MessageBox("Notice", "Dumped stripped executable to:\n" + megapackCodeDir, DialogType::DialogOk, ClearScreen::Both)();
-        OSD::Notify("Dumped stripped executable to: " + megapackCodeDir);
+        MessageBox("Notice", "Dumped stripped executable to:\n" + FelskerCodeDir, DialogType::DialogOk, ClearScreen::Both)();
+        OSD::Notify("Dumped stripped executable to: " + FelskerCodeDir);
     }
     file.Close();
 }
@@ -734,23 +753,11 @@ void getCstickMovement(MenuEntry *entry) {
     svcSleepThread(3200000ULL); // added 3.2ms delay because sometimes menu doesn't open when pressing button combo
 }
 
-void displayMegapackVersion() {
-    std::string patchPath = modsPath + "romfs/notes/patch.txt";
-    char buffer[7] = {0};
-    File file;
-    if (File::Open(file, patchPath, File::READ) == 0){
-        file.Seek(0x17);
-        file.Read(buffer, 6);
-    }
-    file.Close();
-    Process::WriteString(0x340E883C, buffer);
-}
-
 void changeSkinToCustom() {
     static u32 address = 0;
     static std::vector<u8> valToSearch;
 
-    std::string skinsDir = megapackSkinsDir;
+    std::string skinsDir = FelskerSkinsDir;
     OSD::Notify(skinsDir);
 
     std::vector<std::string> skinFiles;
@@ -801,7 +808,7 @@ void changeSkinToCustom() {
 void animateBaseSkinHead() {
     static u32 address = 0;
     static std::vector<u8> valToSearch;
-    std::string animationsDir = megapackAnimationsHeadDir;
+    std::string animationsDir = FelskerAnimationsHeadDir;
     //OSD::Notify(animationsDir);
 
     //std::vector<std::string> animationFiles;
@@ -838,10 +845,10 @@ void animateSkinHead(MenuEntry *entry) {
     static u32 address = 0;
     static std::vector<u8> valToSearch;
 
-    std::string selectedAnimation = megapackAnimationsHeadDir + "/default.3dst";
+    std::string selectedAnimation = FelskerAnimationsHeadDir + "/default.3dst";
     File configFile;
     std::vector<u8> myConfigBuffer(0x25);
-    if (File::Open(configFile, megapackAnimationsHeadDir + "/config.txt", File::READ) == 0) {
+    if (File::Open(configFile, FelskerAnimationsHeadDir + "/config.txt", File::READ) == 0) {
         configFile.Seek(0xA9);
         configFile.Read(myConfigBuffer.data(), myConfigBuffer.size());
     }

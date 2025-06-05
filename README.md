@@ -35,7 +35,7 @@
 | World Extractor        | ✓  | ✗    | ✗         | Extracts (only) the World from Memory. The Headers of the World need to be rebuilt.                                               |
 | Dump Executable        | ✓  | ✗    | ✗         | Dumps the Executable from Memory. With/without modifications if some mods are applied.                                            |
 | Dump Stripped Executable | ✓  | ✗  | ✗         | Dumps the Stripped Executable from Memory, which doesn't includes the Variables. With/without modifications if some mods are applied. |
-
+| Seed Changer           | ✓ | ✗     | ✓         | Lets you change your seed.                                                                                       |
 
 ### Dense Fog Weather Gallery:
 ![2025-11-20_23-59-24 681_top](https://github.com/user-attachments/assets/e8cc05a1-d8dd-49fa-b0ca-4ebfccbfc3e3)

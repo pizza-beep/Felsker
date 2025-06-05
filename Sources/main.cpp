@@ -139,7 +139,43 @@ exit:
         svcSleepThread(1000000000ULL);
         Process::ReturnToHomeMenu();
     }
+    void MoveDirectoryRecursive(const std::string& srcDir, const std::string& dstDir)
+{
+    if (!Directory::IsExists(dstDir))
+        Directory::Create(dstDir);
 
+    std::vector<std::string> entries;
+    Directory::GetList(srcDir, entries, false, true, true);
+
+    for (const auto& entry : entries)
+    {
+        std::string srcPath = srcDir + "/" + entry;
+        std::string dstPath = dstDir + "/" + entry;
+
+        if (Directory::IsExists(srcPath))
+        {
+            MoveDirectoryRecursive(srcPath, dstPath);
+            Directory::Remove(srcPath);
+        }
+        else
+        {
+            File::Rename(srcPath, dstPath);
+        }
+    }
+}
+
+void MoveMegapackPluginToFelsker()
+{
+    std::string srcDir = "sdmc:/megapackplugin";
+    std::string dstDir = "sdmc:/Minecraft 3ds/Felsker";
+
+    if (!Directory::IsExists(srcDir))
+        return; // Nothing to move
+
+    MoveDirectoryRecursive(srcDir, dstDir);
+    Directory::Remove(srcDir);
+    OSD::Notify("Moved megapackplugin contents to Felsker.");
+}
     void InitMenu(PluginMenu &menu)
     {
         menu += new MenuEntry("CTRPF C-Stick Fix", getCstickMovement);
@@ -158,6 +194,7 @@ exit:
         funFolder->Append(new MenuEntry("Remove (most) Mob Heads", removeHeads));
         funFolder->Append(new MenuEntry("Every Mob/Player Spins", everythingSpinny));
         funFolder->Append(new MenuEntry("Walk Forward", dropEverything));
+        codesFolder->Append(new MenuEntry("Change seed", seedchanger));
         //funFolder->Append(new MenuEntry("Creative Mode", creativeMode));
         miscFolder->Append(new MenuEntry("Dynamic Clouds", dynaClouds));
         miscFolder->Append(new MenuEntry("Dynamic Thick Fog Weather", thickFogWeather));
@@ -376,17 +413,18 @@ exit:
         u64 eurTID = 1125899908401664;
         u64 jpnTID = 1125899908414720;
         PluginMenu *menu = nullptr;
-        std::string mgapckTxt = "MegaPack Plugin - ";
-        std::string abtPlg = "A CTRPF Plugin meant for working with Modernization MegaPack.\nDeveloped by: Cracko298\n\nWith help from:\n- wyndchyme\n- Zexlo\n- RaiRai6895\n- Darksiders (Kilix)\n- Pizzaleader";
+        std::string FelskerTxt = "Felsker - ";
+        std::string abtPlg = " A fork of the Megapack plugin, has a lot of tools and gameplay improvments
+\nDeveloped by: Pizzaleader, \n-OG code by Cracko298\n\nWith help from:\n- wyndchyme\n- Zexlo\n- RaiRai6895\n- Darksiders (Kilix)";
 
         if (usaTID == titleID)
-            menu = new PluginMenu(mgapckTxt + "USA", 1, 0, 0, abtPlg);
+            menu = new PluginMenu(FelskerTxt + "USA", 1, 0, 0, abtPlg);
         else if (eurTID == titleID)
-            menu = new PluginMenu(mgapckTxt + "EUR", 1, 0, 0, abtPlg);
+            menu = new PluginMenu(FelskerTxt + "EUR", 1, 0, 0, abtPlg);
         else if (jpnTID == titleID)
-            menu = new PluginMenu(mgapckTxt + "JPN", 1, 0, 0, abtPlg);
+            menu = new PluginMenu(FelskerTxt + "JPN", 1, 0, 0, abtPlg);
         else
-            menu = new PluginMenu(mgapckTxt + "BAD", 1, 0, 0, abtPlg);
+            menu = new PluginMenu(FelskerTxt + "BAD", 1, 0, 0, abtPlg);
 
         menu->SynchronizeWithFrame(true);
         InitMenu(*menu);
@@ -400,9 +438,9 @@ exit:
             svcCloseHandle(processHandle);
             return (0);
         } else {
+            MoveMegapackPluginToFelsker();
             initializePaths();
             checkAndCreateDirectories();
-            displayMegapackVersion();
             OSD::Notify("Felsker has successfully loaded.");
             OSD::Notify("Press Select to open menu.");
             defaultCodes();

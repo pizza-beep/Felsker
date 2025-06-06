@@ -130,6 +130,442 @@ namespace CTRPluginFramework
         filename = skinsBjson.str();
     }
 
+void RunCSL(const std::string& path)
+{
+    /*
+     * CTRScript/CTRPFScript - Scripting language for CTRPF plugins
+     * Supported commands:
+     *   * WRITE addr value                - Write 32-bit value to memory
+     *   * NOTIFY message                  - Show a notification
+     *   * MKDIR path                      - Create a directory
+     *   * CREATEFILE path                 - Create a file
+     *   * WRITEFILE path text...          - Write text to a file (overwrite)
+     *   * APPENDFILE path text...         - Append text to a file
+     *   * READFILE path                   - Show file contents in OSD
+     *   * DELETEFILE path                 - Delete a file
+     *   * DELETEDIR path                  - Delete a directory
+     *   * KEYBOARD var prompt             - Ask for integer input, store in var
+     *   * KEYBOARDF var prompt            - Ask for float input, store in var
+     *   * KEYBOARDHEX var prompt          - Ask for hex input, store in var
+     *   * SET var value                   - Set variable
+     *   * ADD/SUB/MUL/DIV var value       - Math on variable
+     *   * RAND var min max                - Random int in [min,max], store in var
+     *   * VAR var                         - Show variable value
+     *   * IF var op value THEN CMD ...    - If condition, run CMD (NOTIFY/WRITE/GOTO)
+     *   * GOTO label                      - Jump to label
+     *   * :label                          - Define a label
+     *   * INCLUDE path                    - Run another script
+     *   * LOOP n ... ENDLOOP              - Repeat block n times
+     *   * LISTDIR path                    - List directory contents
+     *   * COPYFILE src dst                - Copy file
+     *   * MOVEFILE src dst                - Move/rename file
+     *   * WAITBUTTON btn                  - Wait for button press (A/B/X/Y/L/R/START/SELECT)
+     *   * READVAR var addr                - Read 32-bit value from memory to var
+     *   * SLEEP ms                        - Wait for ms milliseconds
+     *   * *                        - Comment line
+     */
+
+    File file;
+    if (File::Open(file, path, File::READ) != 0)
+    {
+        OSD::Notify("Script not found.");
+        return;
+    }
+
+    u32 fileSize = file.GetSize();
+    std::vector<char> buffer(fileSize + 1, '\0');
+    file.Read(buffer.data(), fileSize);
+    file.Close();
+
+    std::istringstream iss(buffer.data());
+    std::string line;
+    std::unordered_map<std::string, int> variables;
+    std::unordered_map<std::string, std::streampos> labels;
+    std::vector<std::string> scriptLines;
+    std::vector<size_t> loopStack;
+    std::random_device rd;
+    std::mt19937 rng(rd());
+
+    // * First pass: store all lines and label positions
+    while (std::getline(iss, line)) {
+        scriptLines.push_back(line);
+        std::istringstream lss(line);
+        std::string first;
+        lss >> first;
+        if (!first.empty() && first[0] == ':') {
+            labels[first.substr(1)] = scriptLines.size() - 1;
+        }
+    }
+
+    for (size_t i = 0; i < scriptLines.size(); ++i)
+    {
+        std::istringstream lss(scriptLines[i]);
+        std::string cmd;
+        lss >> cmd;
+
+        // * Skip label-only lines and comments
+        if (cmd.empty() || cmd[0] == ':' || cmd[0] == '#' || (cmd.size() > 1 && cmd[0] == '/' && cmd[1] == '/')) continue;
+
+        // * Variable expansion utility
+        auto expandVars = [&](std::string s) {
+            size_t pos = 0;
+            while ((pos = s.find('$', pos)) != std::string::npos) {
+                size_t end = pos + 1;
+                while (end < s.size() && (isalnum(s[end]) || s[end] == '_')) ++end;
+                std::string var = s.substr(pos + 1, end - pos - 1);
+                if (variables.count(var))
+                    s.replace(pos, end - pos, std::to_string(variables[var]));
+                pos += 1;
+            }
+            return s;
+        };
+
+        if (cmd == "WRITE")
+        {
+            std::string addrStr, valueStr;
+            lss >> addrStr >> valueStr;
+            u32 addr = std::stoul(expandVars(addrStr), nullptr, 0);
+            u32 value = std::stoul(expandVars(valueStr), nullptr, 0);
+            Process::Write32(addr, value);
+        }
+        else if (cmd == "NOTIFY")
+        {
+            std::string msg;
+            std::getline(lss, msg);
+            OSD::Notify(expandVars(msg));
+        }
+        else if (cmd == "MKDIR")
+        {
+            std::string dirPath;
+            lss >> dirPath;
+            Directory::Create(expandVars(dirPath));
+        }
+        else if (cmd == "CREATEFILE")
+        {
+            std::string filePath;
+            lss >> filePath;
+            File::Create(expandVars(filePath));
+        }
+        else if (cmd == "WRITEFILE")
+        {
+            std::string filePath, text;
+            lss >> filePath;
+            std::getline(lss, text);
+            File outFile;
+            if (File::Open(outFile, expandVars(filePath), File::WRITE) == 0)
+            {
+                std::string expanded = expandVars(text);
+                outFile.Write(expanded.c_str(), expanded.size());
+                outFile.Close();
+            }
+        }
+        else if (cmd == "APPENDFILE")
+        {
+            std::string filePath, text;
+            lss >> filePath;
+            std::getline(lss, text);
+            File outFile;
+            if (File::Open(outFile, expandVars(filePath), File::APPEND) == 0)
+            {
+                std::string expanded = expandVars(text);
+                outFile.Write(expanded.c_str(), expanded.size());
+                outFile.Close();
+            }
+        }
+        else if (cmd == "READFILE")
+        {
+            std::string filePath;
+            lss >> filePath;
+            File inFile;
+            if (File::Open(inFile, expandVars(filePath), File::READ) == 0)
+            {
+                u32 size = inFile.GetSize();
+                std::vector<char> fileBuffer(size + 1, '\0');
+                inFile.Read(fileBuffer.data(), size);
+                inFile.Close();
+                OSD::Notify("File: " + expandVars(filePath) + "\n" + std::string(fileBuffer.data()));
+            }
+        }
+        else if (cmd == "DELETEFILE")
+        {
+            std::string filePath;
+            lss >> filePath;
+            File::Remove(expandVars(filePath));
+        }
+        else if (cmd == "DELETEDIR")
+        {
+            std::string dirPath;
+            lss >> dirPath;
+            Directory::Remove(expandVars(dirPath));
+        }
+        else if (cmd == "KEYBOARD")
+        {
+            std::string var, prompt;
+            lss >> var;
+            std::getline(lss, prompt);
+            int value = 0;
+            Keyboard kb(prompt.empty() ? "Enter value:" : prompt.substr(1));
+            if (kb.Open(value) != -1)
+                variables[var] = value;
+        }
+        else if (cmd == "KEYBOARDF")
+        {
+            std::string var, prompt;
+            lss >> var;
+            std::getline(lss, prompt);
+            float value = 0.0f;
+            Keyboard kb(prompt.empty() ? "Enter float:" : prompt.substr(1));
+            if (kb.Open(value) != -1)
+                variables[var] = static_cast<int>(value);
+        }
+        else if (cmd == "KEYBOARDHEX")
+        {
+            std::string var, prompt;
+            lss >> var;
+            std::getline(lss, prompt);
+            int value = 0;
+            Keyboard kb(prompt.empty() ? "Enter hex value:" : prompt.substr(1));
+            kb.IsHexadecimal(true);
+            if (kb.Open(value) != -1)
+                variables[var] = value;
+        }
+        else if (cmd == "SET")
+        {
+            std::string var, valueStr;
+            lss >> var >> valueStr;
+            variables[var] = std::stoi(expandVars(valueStr));
+        }
+        else if (cmd == "ADD")
+        {
+            std::string var, valueStr;
+            lss >> var >> valueStr;
+            variables[var] += std::stoi(expandVars(valueStr));
+        }
+        else if (cmd == "SUB")
+        {
+            std::string var, valueStr;
+            lss >> var >> valueStr;
+            variables[var] -= std::stoi(expandVars(valueStr));
+        }
+        else if (cmd == "MUL")
+        {
+            std::string var, valueStr;
+            lss >> var >> valueStr;
+            variables[var] *= std::stoi(expandVars(valueStr));
+        }
+        else if (cmd == "DIV")
+        {
+            std::string var, valueStr;
+            lss >> var >> valueStr;
+            int v = std::stoi(expandVars(valueStr));
+            if (v != 0) variables[var] /= v;
+        }
+        else if (cmd == "RAND")
+        {
+            std::string var;
+            int min, max;
+            lss >> var >> min >> max;
+            std::uniform_int_distribution<int> dist(min, max);
+            variables[var] = dist(rng);
+        }
+        else if (cmd == "VAR")
+        {
+            std::string var;
+            lss >> var;
+            OSD::Notify(var + " = " + std::to_string(variables[var]));
+        }
+        else if (cmd == "IF")
+        {
+            std::string var, op, thenCmd;
+            int cmpValue;
+            lss >> var >> op >> cmpValue >> thenCmd;
+            bool cond = false;
+            int varValue = variables[var];
+
+            if (op == "==") cond = (varValue == cmpValue);
+            else if (op == "!=") cond = (varValue != cmpValue);
+            else if (op == "<") cond = (varValue < cmpValue);
+            else if (op == "<=") cond = (varValue <= cmpValue);
+            else if (op == ">") cond = (varValue > cmpValue);
+            else if (op == ">=") cond = (varValue >= cmpValue);
+
+            if (cond)
+            {
+                if (thenCmd == "NOTIFY")
+                {
+                    std::string msg;
+                    std::getline(lss, msg);
+                    OSD::Notify(expandVars(msg));
+                }
+                else if (thenCmd == "WRITE")
+                {
+                    std::string addrStr, valueStr;
+                    lss >> addrStr >> valueStr;
+                    u32 addr = std::stoul(expandVars(addrStr), nullptr, 0);
+                    u32 value = std::stoul(expandVars(valueStr), nullptr, 0);
+                    Process::Write32(addr, value);
+                }
+                else if (thenCmd == "GOTO")
+                {
+                    std::string label;
+                    lss >> label;
+                    if (labels.count(label))
+                        i = labels[label];
+                }
+            }
+        }
+        else if (cmd == "GOTO")
+        {
+            std::string label;
+            lss >> label;
+            if (labels.count(label))
+                i = labels[label];
+        }
+        else if (cmd == "INCLUDE")
+        {
+            std::string includePath;
+            lss >> includePath;
+            RunCSL(expandVars(includePath));
+        }
+        else if (cmd == "LOOP")
+        {
+            int count;
+            lss >> count;
+            loopStack.push_back(i);
+            variables["_loopcount"] = count;
+        }
+        else if (cmd == "ENDLOOP")
+        {
+            if (!loopStack.empty()) {
+                int &count = variables["_loopcount"];
+                if (--count > 0) {
+                    i = loopStack.back();
+                } else {
+                    loopStack.pop_back();
+                }
+            }
+        }
+        else if (cmd == "LISTDIR")
+        {
+            std::string dirPath;
+            lss >> dirPath;
+            std::vector<std::string> entries;
+            Directory::GetList(expandVars(dirPath), entries, false, true, true);
+            std::string out = "DIR: " + expandVars(dirPath) + "\n";
+            for (const auto& e : entries)
+                out += e + "\n";
+            OSD::Notify(out);
+        }
+        else if (cmd == "COPYFILE")
+        {
+            std::string src, dst;
+            lss >> src >> dst;
+            File::Copy(expandVars(src), expandVars(dst));
+        }
+        else if (cmd == "MOVEFILE")
+        {
+            std::string src, dst;
+            lss >> src >> dst;
+            File::Rename(expandVars(src), expandVars(dst));
+        }
+        else if (cmd == "WAITBUTTON")
+        {
+            std::string btn;
+            lss >> btn;
+            OSD::Notify("Press " + btn + " to continue...");
+            while (true) {
+                Controller::Update();
+                if ((btn == "A" && Controller::IsKeyDown(Key::A)) ||
+                    (btn == "B" && Controller::IsKeyDown(Key::B)) ||
+                    (btn == "X" && Controller::IsKeyDown(Key::X)) ||
+                    (btn == "Y" && Controller::IsKeyDown(Key::Y)) ||
+                    (btn == "L" && Controller::IsKeyDown(Key::L)) ||
+                    (btn == "R" && Controller::IsKeyDown(Key::R)) ||
+                    (btn == "START" && Controller::IsKeyDown(Key::Start)) ||
+                    (btn == "SELECT" && Controller::IsKeyDown(Key::Select)))
+                    break;
+                svcSleepThread(10000000ULL); // 10ms
+            }
+        }
+        else if (cmd == "READVAR")
+        {
+            std::string var, addrStr;
+            lss >> var >> addrStr;
+            u32 addr = std::stoul(expandVars(addrStr), nullptr, 0);
+            u32 value = 0;
+            Process::Read32(addr, value);
+            variables[var] = value;
+        }
+        else if (cmd == "SLEEP")
+        {
+            int ms;
+            lss >> ms;
+            svcSleepThread(ms * 1000000ULL);
+        }
+                else if (cmd == "FUNC") {
+            std::string funcName;
+            lss >> funcName;
+            labels["func_" + funcName] = i + 1;
+            // Skip to ENDFUNC
+            while (++i < scriptLines.size()) {
+                if (scriptLines[i].find("ENDFUNC") == 0) break;
+            }
+            continue;
+        }
+        else if (cmd == "CALL") {
+            std::string funcName;
+            lss >> funcName;
+            if (labels.count("func_" + funcName))
+                i = labels["func_" + funcName] - 1;
+            continue;
+        }
+        else if (cmd == "ENDFUNC") {
+            continue;
+        }
+        else if (cmd == "RETURN") {
+            // Return from function, just continue to next line
+            continue;
+        }
+        else {
+            OSD::Notify("Unknown command: " + cmd);
+            return;
+        }
+        else if (cmd == "DRAWOVAL")
+        {
+            int x, y, w, h;
+            std::string colorStr;
+            lss >> x >> y >> w >> h >> colorStr;
+            Color color = Color::White;
+            if (colorStr == "red") color = Color::Red;
+            else if (colorStr == "green") color = Color::Green;
+            else if (colorStr == "blue") color = Color::Blue;
+            else if (colorStr == "black") color = Color::Black;
+            else if (colorStr == "yellow") color = Color::Yellow;
+            OSD::DrawEllipse(x, y, w, h, color);
+        }
+        else if (cmd == "DRAWPIXELS")
+        {
+        std::vector<std::pair<int, int>> points;
+        std::string token;
+        while (lss >> token) {
+            if (!isdigit(token[0]) && token[0] != '-') break;
+            int x = std::stoi(token);
+            int y;
+            lss >> y;
+            points.emplace_back(x, y);
+        }
+        std::string colorStr = token;
+        Color color = Color::White;
+        if (colorStr == "red") color = Color::Red;
+        else if (colorStr == "green") color = Color::Green;
+        else if (colorStr == "blue") color = Color::Blue;
+        else if (colorStr == "black") color = Color::Black;
+        else if (colorStr == "yellow") color = Color::Yellow;
+    for (const auto& pt : points)
+        OSD::DrawPixel(pt.first, pt.second, color);
+}
+    }
+}
     void checkAndCreateDirectories() {
         FelskerDir = "sdmc:/Minecraft 3ds/Felsker";
         FelskerWorldDir = "sdmc:/Minecraft 3ds/Felsker/worldBackups";

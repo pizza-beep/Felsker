@@ -164,13 +164,39 @@ exit:
     }
 }
 
+void autoLoadCSLScripts()
+{
+    std::string scriptDir = "sdmc:/Minecraft 3ds/Felsker/scripts";
+    // Create the directory if it doesn't exist
+    if (!Directory::IsExists(scriptDir))
+        Directory::Create(scriptDir);
+
+    // List all files in the directory
+    std::vector<std::string> files;
+    Directory dir;
+    if (Directory::Open(dir, scriptDir) == 0)
+    {
+        dir.ListFiles(files);
+        dir.Close();
+    }
+
+    // Run all .CSL files
+    for (const auto& file : files)
+    {
+        if (file.size() >= 4 && file.substr(file.size() - 4) == ".CSL")
+        {
+            RunCSL(scriptDir + "/" + file);
+        }
+    }
+}
+
 void MoveMegapackPluginToFelsker()
 {
     std::string srcDir = "sdmc:/megapackplugin";
     std::string dstDir = "sdmc:/Minecraft 3ds/Felsker";
 
     if (!Directory::IsExists(srcDir))
-        return; // Nothing to move
+        return;
 
     MoveDirectoryRecursive(srcDir, dstDir);
     Directory::Remove(srcDir);
@@ -186,6 +212,7 @@ void MoveMegapackPluginToFelsker()
         MenuFolder *toolsFolder = new MenuFolder("Tools");
         // codesFolder->Append(new MenuEntry("Drop Everything In-Hand", dropEverything));
         codesFolder->Append(new MenuEntry("Disable Dropped Item/EXP Limit", itemExpLimit));
+        codesFolder->Append(new MenuEntry("Run CSL script", RunCSL));
         codesFolder->Append(new MenuEntry("Remove Mob Spawn Cap", removeMobCap));
         codesFolder->Append(new MenuEntry("Disable Mob Spawning", stopMobSpawns));
         codesFolder->Append(new MenuEntry("Enhanced Particles", enhancedParticles));
@@ -439,6 +466,7 @@ void MoveMegapackPluginToFelsker()
             return (0);
         } else {
             MoveMegapackPluginToFelsker();
+            autoLoadCSLScripts();
             initializePaths();
             checkAndCreateDirectories();
             OSD::Notify("Felsker has successfully loaded.");

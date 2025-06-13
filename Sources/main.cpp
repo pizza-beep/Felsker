@@ -388,6 +388,7 @@ void MoveMegapackPluginToFelsker()
         //}));
         configFolder->Append(new MenuEntry("Change FOV", nullptr, [](MenuEntry *entry)
         { // wyndchyme was here. This FOV setting doesn't seem to apply to everything (the wider FOV seems to only distort the held item appearance.) Hi Cracko!
+          // This should be fixed now, but I haven't tested it.
             float userValue;
             Keyboard kb("Enter a float value (Recommended 50-130):");
             float input;
@@ -397,6 +398,8 @@ void MoveMegapackPluginToFelsker()
                 float userValue = input;
 
                 Process::WriteFloat(0x3CEE80, userValue);
+                Process::WriteFloat(0x341F30F8, userValue);
+                Process::WriteFloat(0x341F313C, userValue);
 
                 OSD::Notify(Utils::Format("Written: %.2f to 0x3CEE80", userValue));
         }
@@ -441,7 +444,7 @@ void MoveMegapackPluginToFelsker()
         u64 jpnTID = 1125899908414720;
         PluginMenu *menu = nullptr;
         std::string FelskerTxt = "Felsker - ";
-        std::string abtPlg = " A fork of the Megapack plugin, has a lot of tools and gameplay improvments
+        std::string abtPlg = " A fork of the Megapack plugin, with a lot of tools and gameplay improvments
 \nDeveloped by: Pizzaleader, \n-OG code by Cracko298\n\nWith help from:\n- wyndchyme\n- Zexlo\n- RaiRai6895\n- Darksiders (Kilix)";
 
         if (usaTID == titleID)

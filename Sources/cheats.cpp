@@ -162,9 +162,10 @@ void RunCSL(const std::string& path)
      *   * WAITBUTTON btn                  - Wait for button press (A/B/X/Y/L/R/START/SELECT)
      *   * READVAR var addr                - Read 32-bit value from memory to var
      *   * SLEEP ms                        - Wait for ms milliseconds
-     *   * *                        - Comment line
+     *   * *                               - Comment line
      */
-
+// I made this a while ago, before lunacore so this is less useful now.
+// probably should be removed in the future, but it can stay for now
     File file;
     if (File::Open(file, path, File::READ) != 0)
     {
